@@ -15,11 +15,23 @@ class DeliveryConfigurationAdmin(admin.ModelAdmin):
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0  # Don't show empty rows by default for existing orders
-    readonly_fields = ('price_at_order',) # Protects past receipts from accidental edits
+    readonly_fields = ('variant', 'quantity', 'price_at_order') # Protects past receipts from accidental edits
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'status', 'total_amount', 'created_at')
+    # CHANGED: Replaced 'user' with our custom 'get_buyer_name' function
+    list_display = ('id', 'get_buyer_name', 'status', 'total_amount', 'created_at')
     list_filter = ('status', 'created_at')
-    search_fields = ('user__username', 'id')
+    # CHANGED: Added 'customer_name' to search fields so you can search for guests!
+    search_fields = ('user__username', 'customer_name', 'id')
     inlines = [OrderItemInline]
+
+    # Custom function to show the guest name if they aren't logged in
+    def get_buyer_name(self, obj):
+        if obj.user:
+            return obj.user.username
+        if obj.customer_name:
+            return f"{obj.customer_name} (Guest)"
+        return "Unknown Guest"
+    
+    get_buyer_name.short_description = 'Customer' # Column title

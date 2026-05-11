@@ -71,9 +71,14 @@ export default function Cart() {
           <p className="text-sm text-gray-500 font-bold tracking-wide uppercase mb-1">Subtotal</p>
           <p className="text-4xl font-bold text-brand-green">KES {cartTotal.toLocaleString()}</p>
         </div>
-        <button className="bg-brand-brown text-brand-cream px-10 py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all shadow-md">
+        
+        {/* <-- UPDATED: Changed from a button to a functional Link --> */}
+        <Link 
+          to="/checkout"
+          className="bg-brand-brown text-brand-cream px-10 py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all shadow-md inline-block"
+        >
           Checkout
-        </button>
+        </Link>
       </div>
 
     </div>

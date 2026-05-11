@@ -12,7 +12,6 @@ export const CartProvider = ({ children }) => {
   // Initialize state by checking Local Storage FIRST
   const [cartItems, setCartItems] = useState(() => {
     const savedCart = localStorage.getItem('marketDaysCart');
-    // If there is a saved cart, parse it. Otherwise, start empty.
     return savedCart ? JSON.parse(savedCart) : [];
   });
 
@@ -24,13 +23,11 @@ export const CartProvider = ({ children }) => {
   // Function to add an item to the cart 
   const addToCart = (product, variant, quantityToAdd = 1) => {
     setCartItems(prevItems => {
-      // Check if this exact product and size is already in the cart
       const existingItem = prevItems.find(
         item => item.product.id === product.id && item.variant.id === variant.id
       );
 
       if (existingItem) {
-        // If it is, increase it by the specific quantity requested
         return prevItems.map(item =>
           item.product.id === product.id && item.variant.id === variant.id
             ? { ...item, quantity: item.quantity + quantityToAdd }
@@ -38,7 +35,6 @@ export const CartProvider = ({ children }) => {
         );
       }
       
-      // If it's new, add it with the specific quantity requested
       return [...prevItems, { product, variant, quantity: quantityToAdd }];
     });
   };
@@ -50,14 +46,20 @@ export const CartProvider = ({ children }) => {
     );
   };
 
+  // NEW: Function to completely empty the cart after successful checkout
+  const clearCart = () => {
+    setCartItems([]);
+  };
+
   // Calculate total items (counts unique product lines instead of total weight)
   const totalItems = cartItems.length;
 
   // Calculate total price
   const cartTotal = cartItems.reduce((total, item) => total + (item.variant.price * item.quantity), 0);
 
+  // Added clearCart to our exported values
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, totalItems, cartTotal }}>
+    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, clearCart, totalItems, cartTotal }}>
       {children}
     </CartContext.Provider>
   );

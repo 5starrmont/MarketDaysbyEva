@@ -30,12 +30,19 @@ class OrderViewSet(viewsets.ModelViewSet):
     API endpoint for customers to view their past orders and create new ones.
     """
     serializer_class = OrderSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # CHANGED: Allow anyone to hit this endpoint so Guest Checkouts work!
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        # Only show the user their own orders
-        return Order.objects.filter(user=self.request.user).order_by('-created_at')
+        # If the user is logged in, show their orders. Otherwise, show an empty list.
+        if self.request.user.is_authenticated:
+            return Order.objects.filter(user=self.request.user).order_by('-created_at')
+        return Order.objects.none()
 
     def perform_create(self, serializer):
-        # When creating a new order, tie it to the user making the request
-        serializer.save(user=self.request.user)
+        # If the user is logged in, attach their account to the order.
+        # If they are not logged in, just save it as an anonymous guest order.
+        if self.request.user.is_authenticated:
+            serializer.save(user=self.request.user)
+        else:
+            serializer.save()

@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Shop from './pages/Shop'; 
 import ProductDetail from './pages/ProductDetail'; 
-import Cart from './pages/Cart'; // <-- Imported your real Cart page
+import Cart from './pages/Cart'; 
+import Checkout from './pages/Checkout'; // <-- Imported the new Checkout page!
 import { useCart } from './context/CartContext'; 
 
 // Temporary placeholder page
@@ -10,7 +11,7 @@ function Home() {
 }
 
 function App() {
-  const { totalItems } = useCart(); // <-- Pull the live total items count!
+  const { totalItems } = useCart(); 
 
   return (
     <Router>
@@ -45,7 +46,8 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/products" element={<Shop />} /> 
             <Route path="/products/:id" element={<ProductDetail />} /> 
-            <Route path="/cart" element={<Cart />} /> {/* <-- Now points to your real component */}
+            <Route path="/cart" element={<Cart />} /> 
+            <Route path="/checkout" element={<Checkout />} /> {/* <-- Added the checkout route */}
           </Routes>
         </main>
         
