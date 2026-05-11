@@ -15,6 +15,10 @@ urlpatterns = [
     # API Routes
     path('api/inventory/', include('inventory.urls')),
     path('api/orders/', include('orders.urls')),
+    
+    # Authentication Routes (Djoser + SimpleJWT)
+    path('api/auth/', include('djoser.urls')),
+    path('api/auth/', include('djoser.urls.jwt')),
 ]
 
 # This allows Django to serve uploaded product images during development

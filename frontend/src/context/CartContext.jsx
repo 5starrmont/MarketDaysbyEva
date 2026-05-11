@@ -46,18 +46,18 @@ export const CartProvider = ({ children }) => {
     );
   };
 
-  // NEW: Function to completely empty the cart after successful checkout
+  // FIXED: Clears state AND wipes Local Storage to ensure a clean slate on logout
   const clearCart = () => {
     setCartItems([]);
+    localStorage.removeItem('marketDaysCart');
   };
 
-  // Calculate total items (counts unique product lines instead of total weight)
+  // Calculate total items (counts unique product lines)
   const totalItems = cartItems.length;
 
   // Calculate total price
   const cartTotal = cartItems.reduce((total, item) => total + (item.variant.price * item.quantity), 0);
 
-  // Added clearCart to our exported values
   return (
     <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, clearCart, totalItems, cartTotal }}>
       {children}
