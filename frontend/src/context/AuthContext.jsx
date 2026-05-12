@@ -5,23 +5,33 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  // Start loading as true so the app pauses rendering until we check the token
   const [loading, setLoading] = useState(true);
 
   const fetchUser = async () => {
     const token = localStorage.getItem('access');
-    if (token) {
-      try {
-        // Djoser endpoint to get the current logged-in user details
-        const res = await axios.get('http://127.0.0.1:8000/api/auth/users/me/', {
-          headers: { Authorization: `JWT ${token}` }
-        });
-        setUser(res.data);
-      } catch (err) {
-        console.error("Session expired");
-        logout();
-      }
+    
+    // If no token exists, immediately stop loading and render the logged-out app
+    if (!token) {
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+
+    try {
+      // Djoser endpoint to get the current logged-in user details
+      const res = await axios.get('http://127.0.0.1:8000/api/auth/users/me/', {
+        headers: { Authorization: `JWT ${token}` }
+      });
+      setUser(res.data);
+    } catch (err) {
+      console.error("Session expired or invalid");
+      localStorage.removeItem('access');
+      localStorage.removeItem('refresh');
+      setUser(null);
+    } finally {
+      // Always stop loading once the API call finishes, success or fail
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -42,7 +52,8 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{ user, logout, fetchUser, loading }}>
-      {children}
+      {/* This prevents the "logged out" flicker on refresh */}
+      {!loading && children}
     </AuthContext.Provider>
   );
 }

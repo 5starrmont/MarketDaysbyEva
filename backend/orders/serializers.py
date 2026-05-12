@@ -5,8 +5,6 @@ class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
         fields = ['id', 'address_type', 'location_name', 'latitude', 'longitude']
-        # The user is automatically assigned from the logged-in session, 
-        # so the frontend doesn't need to send it.
 
 class DeliveryConfigurationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,14 +15,14 @@ class DeliveryConfigurationSerializer(serializers.ModelSerializer):
             'tier_3_fee', 'tier_4_fee'
         ]
 
-# This helps DRF understand the incoming items array from React
+# This helps DRF understand the incoming items array from React when placing an order
 class OrderItemCreateSerializer(serializers.Serializer):
     variant_id = serializers.IntegerField()
     quantity = serializers.DecimalField(max_digits=10, decimal_places=2)
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
 
 class OrderSerializer(serializers.ModelSerializer):
-    # Tell DRF to expect a list of items using our special serializer above
+    # This remains write_only so it handles the incoming checkout payload properly
     items = OrderItemCreateSerializer(many=True, write_only=True)
 
     class Meta:
@@ -47,7 +45,24 @@ class OrderSerializer(serializers.ModelSerializer):
                 order=order,
                 variant_id=item_data['variant_id'],
                 quantity=item_data['quantity'],
-                price_at_order=item_data['price'] # Map React's 'price' to Django's 'price_at_order'
+                price_at_order=item_data['price'] 
             )
             
         return order
+
+    # NEW: This intercepts the outgoing data and injects the formatted items 
+    # so React can display them in the Profile dashboard
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        
+        # Format the related OrderItems into a clean dictionary for React
+        representation['items'] = [
+            {
+                'product_name': str(item.variant) if item.variant else "Unknown Item",
+                'quantity': item.quantity,
+                'price': item.price_at_order
+            }
+            for item in instance.items.all()
+        ]
+        
+        return representation

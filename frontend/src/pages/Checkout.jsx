@@ -2,12 +2,11 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext'; // Added Auth Hook
+import { useAuth } from '../context/AuthContext';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// 1. Default Blue Marker (For the Customer's Delivery Pin)
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
 const defaultIcon = L.icon({
@@ -19,7 +18,6 @@ const defaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = defaultIcon;
 
-// 2. Custom Green Marker (For the Shop)
 const shopIcon = L.icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -60,7 +58,7 @@ function PinDrop({ position, onPinDrop }) {
 
 export default function Checkout() {
   const { cartItems, cartTotal, clearCart } = useCart();
-  const { user } = useAuth(); // Get logged in user
+  const { user } = useAuth(); 
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
@@ -181,7 +179,7 @@ export default function Checkout() {
     setErrorMessage('');
 
     const orderPayload = {
-      customer_name: user ? user.username : formData.name, // Priority to logged in user
+      customer_name: user ? user.username : formData.name, 
       customer_phone: formData.phone,
       delivery_address: `${formData.addressNotes} | Location: ${displayLocationName} (Distance: ${distanceKm.toFixed(1)}km, Lat: ${pinLocation.lat.toFixed(5)}, Lng: ${pinLocation.lng.toFixed(5)})`,
       delivery_fee: deliveryFee, 
@@ -195,10 +193,16 @@ export default function Checkout() {
     };
 
     try {
-      await axios.post('http://127.0.0.1:8000/api/orders/orders/', orderPayload);
+      // --- CRITICAL FIX: Attach token if logged in ---
+      const token = localStorage.getItem('access');
+      const config = {
+        headers: token ? { Authorization: `JWT ${token}` } : {}
+      };
+
+      await axios.post('http://127.0.0.1:8000/api/orders/orders/', orderPayload, config);
       clearCart(); 
       alert("Success! Your order has been placed."); 
-      navigate('/'); 
+      navigate('/profile'); // Redirect straight to profile to see it!
     } catch (error) {
       setErrorMessage("Something went wrong processing your order.");
     } finally {
@@ -231,7 +235,6 @@ export default function Checkout() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-6">
             
-            {/* Conditional Rendering: Show name label if logged in, otherwise show input */}
             {user ? (
               <div className="bg-brand-cream/30 p-4 rounded-xl border border-brand-green/20">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Ordering For</p>
