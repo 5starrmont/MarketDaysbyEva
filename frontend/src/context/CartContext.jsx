@@ -9,10 +9,15 @@ export const useCart = () => useContext(CartContext);
 // 3. Create the Provider Component
 export const CartProvider = ({ children }) => {
   
-  // Initialize state by checking Local Storage FIRST
+  // Initialize state by checking Local Storage FIRST (with crash protection)
   const [cartItems, setCartItems] = useState(() => {
-    const savedCart = localStorage.getItem('marketDaysCart');
-    return savedCart ? JSON.parse(savedCart) : [];
+    try {
+      const savedCart = localStorage.getItem('marketDaysCart');
+      return savedCart ? JSON.parse(savedCart) : [];
+    } catch (error) {
+      console.error("Failed to parse cart from local storage", error);
+      return [];
+    }
   });
 
   // Whenever cartItems changes, immediately save it to Local Storage
@@ -39,6 +44,21 @@ export const CartProvider = ({ children }) => {
     });
   };
 
+  // Function to explicitly set a new quantity (useful for a Cart page input field)
+  const updateQuantity = (productId, variantId, newQuantity) => {
+    if (newQuantity <= 0) {
+      removeFromCart(productId, variantId);
+      return;
+    }
+    setCartItems(prevItems => 
+      prevItems.map(item => 
+        item.product.id === productId && item.variant.id === variantId
+          ? { ...item, quantity: newQuantity }
+          : item
+      )
+    );
+  };
+
   // Function to remove an item entirely
   const removeFromCart = (productId, variantId) => {
     setCartItems(prevItems => 
@@ -46,7 +66,7 @@ export const CartProvider = ({ children }) => {
     );
   };
 
-  // FIXED: Clears state AND wipes Local Storage to ensure a clean slate on logout
+  // Clears state AND wipes Local Storage to ensure a clean slate
   const clearCart = () => {
     setCartItems([]);
     localStorage.removeItem('marketDaysCart');
@@ -59,7 +79,15 @@ export const CartProvider = ({ children }) => {
   const cartTotal = cartItems.reduce((total, item) => total + (item.variant.price * item.quantity), 0);
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, clearCart, totalItems, cartTotal }}>
+    <CartContext.Provider value={{ 
+      cartItems, 
+      addToCart, 
+      updateQuantity, 
+      removeFromCart, 
+      clearCart, 
+      totalItems, 
+      cartTotal 
+    }}>
       {children}
     </CartContext.Provider>
   );

@@ -3,13 +3,11 @@ from django.contrib.auth.models import User
 from inventory.models import ProductVariant
 
 class Address(models.Model):
-    ADDRESS_TYPES = (
-        ('Home', 'Home'),
-        ('Work', 'Work'),
-        ('Other', 'Other'),
-    )
     user = models.ForeignKey(User, related_name='addresses', on_delete=models.CASCADE)
-    address_type = models.CharField(max_length=20, choices=ADDRESS_TYPES, default='Home')
+    
+    # CHANGED: Removed choices. Now users can type custom labels like "Mom's House"
+    address_type = models.CharField(max_length=100, default='My Address')
+    
     location_name = models.CharField(max_length=255) 
     
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
@@ -20,6 +18,7 @@ class Address(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.location_name} ({self.address_type})"
+
 
 class DeliveryConfiguration(models.Model):
     name = models.CharField(max_length=100, default="Standard Delivery Rates")
@@ -38,6 +37,7 @@ class DeliveryConfiguration(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Order(models.Model):
     STATUS_CHOICES = (
@@ -70,6 +70,7 @@ class Order(models.Model):
         # Gracefully handle the name whether it's a logged in user or a guest
         buyer = self.user.username if self.user else self.customer_name or "Guest"
         return f"Order #{self.id} - {buyer} - {self.status}"
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
