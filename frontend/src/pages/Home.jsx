@@ -134,34 +134,34 @@ export default function Home() {
           1. GRAND HERO WITH PHOTO COLLAGE
       ══════════════════════════════════════════ */}
       <section className="min-h-[85vh] flex flex-col md:flex-row items-center px-4 relative max-w-7xl mx-auto pt-10 pb-20 gap-10">
-        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-brand-green/10 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-brand-green/10 dark:bg-[#7DC57A]/10 blur-[120px] rounded-full pointer-events-none -z-10"></div>
 
         {/* Left Content */}
         <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="md:w-1/2 z-10 text-left pt-10 md:pt-0">
-          <motion.div variants={heroReveal} className="mb-8 inline-block p-4 bg-white rounded-3xl shadow-xl shadow-brand-green/5 border border-gray-100">
+          <motion.div variants={heroReveal} className="mb-8 inline-block p-4 bg-white dark:bg-[#0A1810] rounded-3xl shadow-xl shadow-brand-green/5 border border-gray-100 dark:border-white/5">
              <img src={brandLogo} alt="Market Days by Eva" className="h-16 md:h-20 w-auto object-contain rounded-xl" />
           </motion.div>
           
-          <motion.span variants={heroReveal} className="text-brand-green font-bold tracking-widest uppercase text-sm mb-6 inline-block bg-brand-green/10 px-4 py-1.5 rounded-full">
+          <motion.span variants={heroReveal} className="text-brand-green dark:text-[#7DC57A] font-bold tracking-widest uppercase text-sm mb-6 inline-block bg-brand-green/10 dark:bg-[#7DC57A]/10 px-4 py-1.5 rounded-full">
             Your Personal Concierge
           </motion.span>
           
-          <motion.h1 variants={heroReveal} className="text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 leading-[1.05] tracking-tight mb-8" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+          <motion.h1 variants={heroReveal} className="text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 dark:text-[#F5EDD8] leading-[1.05] tracking-tight mb-8 transition-colors duration-300" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
             The market, <br className="hidden md:block"/> delivered to <br className="hidden md:block"/> your door.
           </motion.h1>
           
-          <motion.p variants={heroReveal} className="text-lg md:text-xl text-gray-600 mb-10 leading-relaxed max-w-md">
+          <motion.p variants={heroReveal} className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-10 leading-relaxed max-w-md transition-colors duration-300">
             From daily supermarket restocks to prime butchery cuts and fresh pantry staples. We handle the shopping so you can handle life.
           </motion.p>
           
           <motion.div variants={heroReveal} className="flex flex-col sm:flex-row gap-4">
             <motion.div whileHover={buttonHover} whileTap={buttonTap}>
-              <Link to="/products" className="block bg-brand-brown text-white px-8 py-4 rounded-full font-bold text-center shadow-lg shadow-brand-brown/30">
+              <Link to="/products" className="block bg-brand-brown dark:bg-[#7DC57A] text-white dark:text-[#0F2318] px-8 py-4 rounded-full font-bold text-center shadow-lg shadow-brand-brown/30 transition-colors">
                  Shop the Market
               </Link>
             </motion.div>
             <motion.div whileHover={buttonHover} whileTap={buttonTap}>
-              <Link to="/login" className="block bg-white text-gray-800 border border-gray-200 px-8 py-4 rounded-full font-bold text-center hover:bg-gray-50">
+              <Link to="/login" className="block bg-white dark:bg-transparent text-gray-800 dark:text-[#F5EDD8] border border-gray-200 dark:border-white/20 px-8 py-4 rounded-full font-bold text-center hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                  Create Account
               </Link>
             </motion.div>
@@ -170,10 +170,10 @@ export default function Home() {
 
         {/* Right Content */}
         <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="md:w-1/2 relative h-[500px] lg:h-[600px] w-full mt-10 md:mt-0">
-          <motion.img variants={imageReveal} animate={{ y: [0, -10, 0] }} transition={{ y: { repeat: Infinity, duration: 6, ease: "easeInOut" } }} src={img01} alt="Grocery Bag" className="absolute top-4 right-10 w-3/5 h-[350px] object-cover rounded-[2rem] shadow-2xl z-20 border-4 border-white" />
-          <motion.img variants={imageReveal} animate={{ y: [0, 10, 0] }} transition={{ y: { repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 } }} src={imgTrolley} alt="Fresh Produce" className="absolute bottom-6 left-0 w-[55%] h-[220px] object-cover rounded-3xl shadow-2xl z-30 border-8 border-brand-cream" />
+          <motion.img variants={imageReveal} animate={{ y: [0, -10, 0] }} transition={{ y: { repeat: Infinity, duration: 6, ease: "easeInOut" } }} src={img01} alt="Grocery Bag" className="absolute top-4 right-10 w-3/5 h-[350px] object-cover rounded-[2rem] shadow-2xl z-20 border-4 border-white dark:border-[#0A1810]" />
+          <motion.img variants={imageReveal} animate={{ y: [0, 10, 0] }} transition={{ y: { repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 } }} src={imgTrolley} alt="Fresh Produce" className="absolute bottom-6 left-0 w-[55%] h-[220px] object-cover rounded-3xl shadow-2xl z-30 border-8 border-brand-cream dark:border-[#060D0A]" />
           <motion.img variants={imageReveal} animate={{ y: [0, -8, 0], rotate: [4, 4, 4] }} transition={{ y: { repeat: Infinity, duration: 4, ease: "easeInOut", delay: 2 }, rotate: { repeat: Infinity, duration: 4, ease: "easeInOut", delay: 2 } }} src={imgMeat} alt="Prime Meat" className="absolute top-[40%] right-0 w-[180px] h-[180px] object-cover rounded-3xl shadow-xl z-10" />
-          <motion.img variants={imageReveal} animate={{ y: [0, -5, 0], rotate: [-5, -5, -5] }} transition={{ y: { repeat: Infinity, duration: 5, ease: "easeInOut", delay: 0.5 }, rotate: { repeat: Infinity, duration: 5, ease: "easeInOut", delay: 0.5 } }} src={brandBadge} alt="Market Days Quality" className="absolute -top-2 left-16 w-32 h-32 object-cover rounded-full shadow-2xl z-40 border-4 border-white" />
+          <motion.img variants={imageReveal} animate={{ y: [0, -5, 0], rotate: [-5, -5, -5] }} transition={{ y: { repeat: Infinity, duration: 5, ease: "easeInOut", delay: 0.5 }, rotate: { repeat: Infinity, duration: 5, ease: "easeInOut", delay: 0.5 } }} src={brandBadge} alt="Market Days Quality" className="absolute -top-2 left-16 w-32 h-32 object-cover rounded-full shadow-2xl z-40 border-4 border-white dark:border-[#0A1810]" />
         </motion.div>
       </section>
 
@@ -186,8 +186,8 @@ export default function Home() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8 }}
-          className="relative rounded-[2.5rem] mb-6 overflow-hidden shadow-2xl" 
-          style={{ background: '#0F2318', minHeight: 620 }}
+          className="relative rounded-[2.5rem] mb-6 overflow-hidden shadow-2xl bg-[#0F2318] dark:bg-[#0A1810]" 
+          style={{ minHeight: 620 }}
         >
           {/* Abstract Background Elements */}
           <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
@@ -198,28 +198,28 @@ export default function Home() {
             {/* Left Content (Text) */}
             <div className="md:w-1/2 z-20">
               <h2
-                className="mb-6 leading-[1.05]"
-                style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(3rem, 5vw, 4.5rem)', fontWeight: 700, color: '#F5EDD8', letterSpacing: '-0.02em' }}
+                className="mb-6 leading-[1.05] text-[clamp(3rem,5vw,4.5rem)] font-bold text-[#F5EDD8] tracking-[-0.02em]"
+                style={{ fontFamily: "'Cormorant Garamond', serif" }}
               >
                 I shop.
                 <br />
-                <em style={{ color: '#C4892A', fontStyle: 'italic' }}>You relax.</em>
+                <em className="text-[#C4892A] italic">You relax.</em>
               </h2>
 
-              <p className="mb-10 text-lg leading-relaxed max-w-md" style={{ color: 'rgba(245,237,216,0.7)', fontWeight: 300 }}>
+              <p className="mb-10 text-lg leading-relaxed max-w-md text-[#F5EDD8]/70 font-light">
                 Skip the crowded aisles and heavy bags. We meticulously curate your daily essentials and fresh produce, guaranteeing quality with every single delivery.
               </p>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <div className="rounded-2xl p-5 bg-white/5 border border-white/10">
                   <p className="text-xl mb-0.5" aria-hidden="true">⚡</p>
-                  <p className="font-bold text-lg" style={{ color: '#F5EDD8' }}>Fast</p>
-                  <p className="text-xs" style={{ color: 'rgba(245,237,216,0.45)' }}>Same-day delivery</p>
+                  <p className="font-bold text-lg text-[#F5EDD8]">Fast</p>
+                  <p className="text-xs text-[#F5EDD8]/45">Same-day delivery</p>
                 </div>
-                <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <div className="rounded-2xl p-5 bg-white/5 border border-white/10">
                   <p className="text-xl mb-0.5" aria-hidden="true">🧺</p>
-                  <p className="font-bold text-lg" style={{ color: '#F5EDD8' }}>Fresh</p>
-                  <p className="text-xs" style={{ color: 'rgba(245,237,216,0.45)' }}>Hand-picked daily</p>
+                  <p className="font-bold text-lg text-[#F5EDD8]">Fresh</p>
+                  <p className="text-xs text-[#F5EDD8]/45">Hand-picked daily</p>
                 </div>
               </div>
             </div>
@@ -254,8 +254,8 @@ export default function Home() {
         {/* ══════════════════════════════════════════
             SCROLLING TICKER
         ══════════════════════════════════════════ */}
-        <div className="rounded-2xl overflow-hidden mb-24 flex items-center shadow-sm" style={{ background: '#F5EDD8', height: 48, border: '1px solid #E8DDCA' }}>
-          <div className="flex gap-10 items-center whitespace-nowrap" style={{ animation: 'marquee 30s linear infinite', fontSize: 13, fontWeight: 500, color: '#5C4A2A' }}>
+        <div className="rounded-2xl overflow-hidden mb-24 flex items-center shadow-sm h-12 bg-[#F5EDD8] border border-[#E8DDCA] dark:bg-[#0F2318] dark:border-white/5 transition-colors duration-300">
+          <div className="flex gap-10 items-center whitespace-nowrap text-[13px] font-medium text-[#5C4A2A] dark:text-[#7DC57A]" style={{ animation: 'marquee 30s linear infinite' }}>
             {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
               <span key={i} className="flex-shrink-0">{item}</span>
             ))}
@@ -269,29 +269,29 @@ export default function Home() {
         <motion.section className="mb-24" initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}>
           <motion.div variants={fadeUp} className="flex flex-col md:flex-row md:items-end md:justify-between mb-14 gap-4">
             <div>
-              <p className="text-xs font-bold tracking-widest uppercase mb-2" style={{ color: '#7DC57A' }}>Simple process</p>
-              <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 700, color: '#0F2318', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+              <p className="text-xs font-bold tracking-widest uppercase mb-2 text-[#7DC57A]">Simple process</p>
+              <h2 className="text-[clamp(2rem,4vw,3rem)] font-bold text-[#0F2318] dark:text-[#F5EDD8] leading-[1.1] tracking-[-0.02em] transition-colors duration-300" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
                 Your order, handled<br />start to finish.
               </h2>
             </div>
-            <p className="text-sm max-w-xs leading-relaxed" style={{ color: '#6B7280', fontWeight: 300 }}>
+            <p className="text-sm max-w-xs leading-relaxed text-gray-500 dark:text-gray-400 font-light transition-colors duration-300">
               Eva does the running around so you can spend your time on what matters.
             </p>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-6 relative">
-            <div className="hidden md:block absolute top-[2.5rem] left-[calc(16.666%+1.5rem)] right-[calc(16.666%+1.5rem)] h-px pointer-events-none" style={{ background: 'linear-gradient(to right, #D1E8CE, #D1E8CE)' }} />
+            <div className="hidden md:block absolute top-[2.5rem] left-[calc(16.666%+1.5rem)] right-[calc(16.666%+1.5rem)] h-px pointer-events-none bg-gradient-to-r from-[#D1E8CE] to-[#D1E8CE] dark:from-[#1A4D2E] dark:to-[#1A4D2E]" />
 
             {STEPS.map((step, i) => (
-              <motion.div variants={fadeUp} key={i} whileHover={{ y: -10 }} transition={{ type: "spring", stiffness: 300 }} className="relative rounded-3xl p-8 group border border-gray-100 shadow-sm hover:shadow-xl bg-white cursor-pointer">
+              <motion.div variants={fadeUp} key={i} whileHover={{ y: -10 }} transition={{ type: "spring", stiffness: 300 }} className="relative rounded-3xl p-8 group border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-xl bg-white dark:bg-[#0A1810] cursor-pointer transition-colors duration-300">
                 <div className="flex items-center justify-between mb-6">
-                  <motion.div whileHover={{ rotate: 10 }} className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold bg-[#EBF5EA] text-[#2D6A27]">
+                  <motion.div whileHover={{ rotate: 10 }} className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold bg-[#EBF5EA] dark:bg-[#1A4D2E]/30 text-[#2D6A27] dark:text-[#7DC57A]">
                     {step.num}
                   </motion.div>
-                  <div className="text-gray-300 group-hover:text-[#7DC57A] transition-colors">{step.icon}</div>
+                  <div className="text-gray-300 dark:text-gray-600 group-hover:text-[#7DC57A] transition-colors">{step.icon}</div>
                 </div>
-                <h3 className="font-semibold text-lg mb-3 text-gray-900">{step.title}</h3>
-                <p className="text-sm leading-relaxed text-gray-600 font-light">{step.desc}</p>
+                <h3 className="font-semibold text-lg mb-3 text-gray-900 dark:text-white transition-colors duration-300">{step.title}</h3>
+                <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400 font-light transition-colors duration-300">{step.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -312,21 +312,23 @@ export default function Home() {
         <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer} className="mb-24">
           <motion.div variants={fadeUp} className="flex items-end justify-between mb-10">
             <div>
-              <p className="text-xs font-bold tracking-widest uppercase mb-2" style={{ color: '#7DC57A' }}>Fresh & Stocked</p>
-              <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 700, color: '#0F2318', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+              <p className="text-xs font-bold tracking-widest uppercase mb-2 text-[#7DC57A]">Fresh & Stocked</p>
+              <h2 className="text-[clamp(2rem,4vw,3rem)] font-bold text-[#0F2318] dark:text-[#F5EDD8] leading-[1.1] tracking-[-0.02em] transition-colors duration-300" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
                 Featured Market Picks.
               </h2>
             </div>
-            <Link to="/products" className="hidden md:inline-flex items-center gap-2 text-sm font-semibold transition-all hover:gap-3 hover:text-brand-brown" style={{ color: '#2D6A27' }}>
+            <Link to="/products" className="hidden md:inline-flex items-center gap-2 text-sm font-semibold transition-all hover:gap-3 text-[#2D6A27] dark:text-[#7DC57A] hover:text-brand-brown">
               View all products
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
             </Link>
           </motion.div>
 
           {loading ? (
-            <div className="flex justify-center py-24"><div className="w-10 h-10 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#D1E8CE', borderTopColor: '#2D6A27' }} /></div>
+            <div className="flex justify-center py-24"><div className="w-10 h-10 rounded-full border-2 border-t-transparent border-[#D1E8CE] dark:border-white/10 !border-t-[#2D6A27] dark:!border-t-[#7DC57A] animate-spin" /></div>
           ) : featuredProducts.length === 0 ? (
-            <div className="rounded-3xl p-16 text-center" style={{ background: '#F9F7F3', border: '1px solid #E8E0D4' }}><p className="text-sm" style={{ color: '#9CA3AF' }}>No products available at the moment.</p></div>
+            <div className="rounded-3xl p-16 text-center bg-[#F9F7F3] dark:bg-[#0A1810] border border-[#E8E0D4] dark:border-white/5 transition-colors duration-300">
+              <p className="text-sm text-[#9CA3AF] dark:text-gray-500">No products available at the moment.</p>
+            </div>
           ) : (
             <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {featuredProducts.map((product, idx) => (
@@ -344,17 +346,16 @@ export default function Home() {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="rounded-[3rem] p-12 md:p-16 flex flex-col md:flex-row items-center justify-between gap-10 mb-24 relative overflow-hidden shadow-2xl" 
-          style={{ background: '#F5EDD8', border: '1px solid #E8DDCA' }}
+          className="rounded-[3rem] p-12 md:p-16 flex flex-col md:flex-row items-center justify-between gap-10 mb-24 relative overflow-hidden shadow-2xl bg-[#F5EDD8] dark:bg-[#0A1810] border border-[#E8DDCA] dark:border-white/5 transition-colors duration-300" 
         >
           {/* Subtle Sukuma Wiki Accent */}
-          <img src={imgSukuma1} className="absolute right-0 bottom-0 w-80 opacity-[0.15] mix-blend-multiply pointer-events-none" alt="" />
+          <img src={imgSukuma1} className="absolute right-0 bottom-0 w-80 opacity-[0.15] dark:opacity-10 mix-blend-multiply dark:mix-blend-screen pointer-events-none" alt="" />
           
           <div className="max-w-md relative z-10">
-            <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(2rem, 4vw, 2.8rem)', fontWeight: 700, color: '#0F2318', lineHeight: 1.1, marginBottom: '1rem' }}>
+            <h3 className="text-[clamp(2rem,4vw,2.8rem)] font-bold text-[#0F2318] dark:text-[#F5EDD8] leading-[1.1] mb-4 transition-colors duration-300" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
               Your personal shopper,<br />on demand.
             </h3>
-            <p className="text-base leading-relaxed" style={{ color: '#6B7280', fontWeight: 300 }}>
+            <p className="text-base leading-relaxed text-gray-500 dark:text-gray-400 font-light transition-colors duration-300">
               Eva curates meticulously, our riders navigate flawlessly — you simply open the door and enjoy.
             </p>
           </div>
@@ -364,9 +365,9 @@ export default function Home() {
               { icon: '🚴', label: 'Fast delivery' },
               { icon: '💳', label: 'Easy payments' },
             ].map((t) => (
-              <div key={t.label} className="flex items-center gap-4 px-6 py-4 rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all bg-white border border-gray-100">
+              <div key={t.label} className="flex items-center gap-4 px-6 py-4 rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all bg-white dark:bg-[#1A2E18] border border-gray-100 dark:border-white/5">
                 <span className="text-2xl" aria-hidden="true">{t.icon}</span>
-                <span className="text-sm font-bold text-gray-800">{t.label}</span>
+                <span className="text-sm font-bold text-gray-800 dark:text-[#F5EDD8] transition-colors duration-300">{t.label}</span>
               </div>
             ))}
           </div>
@@ -378,8 +379,7 @@ export default function Home() {
         <motion.section 
           id="download" // THE ID IS HERE FOR SCROLLING
           initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}
-          className="mb-24 rounded-[3rem] overflow-hidden flex flex-col md:flex-row items-center justify-between shadow-2xl relative"
-          style={{ background: '#0F2318' }}
+          className="mb-24 rounded-[3rem] overflow-hidden flex flex-col md:flex-row items-center justify-between shadow-2xl relative bg-[#0F2318]"
         >
           {/* Subtle noise background */}
           <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}></div>
@@ -397,11 +397,11 @@ export default function Home() {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                <motion.button whileHover={buttonHover} whileTap={buttonTap} className="bg-white text-gray-900 px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-3 opacity-80 cursor-not-allowed">
+                <motion.button whileHover={buttonHover} whileTap={buttonTap} className="bg-white dark:bg-[#1A2E18] text-gray-900 dark:text-white dark:border dark:border-white/10 px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-3 opacity-80 cursor-not-allowed">
                   <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.04 2.34-.85 3.73-.7 1.83.14 3.01.88 3.86 2.05-3.08 1.85-2.58 5.75.48 6.94-.65 1.58-1.57 3.08-3.15 3.88zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
                   <div className="text-left"><p className="text-[10px] leading-none font-normal uppercase tracking-wider">Download for</p><p className="leading-tight text-base">iOS</p></div>
                 </motion.button>
-                <motion.button whileHover={buttonHover} whileTap={buttonTap} className="bg-white text-gray-900 px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-3 opacity-80 cursor-not-allowed">
+                <motion.button whileHover={buttonHover} whileTap={buttonTap} className="bg-white dark:bg-[#1A2E18] text-gray-900 dark:text-white dark:border dark:border-white/10 px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-3 opacity-80 cursor-not-allowed">
                   <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6"><path d="M3.609 1.814L13.792 12 3.61 22.186a1.983 1.983 0 01-.58-.87A2.08 2.08 0 013 20.528V3.472c0-.282.03-.553.11-.8.077-.253.23-.55.499-.858zM14.925 10.867l2.802-1.616a2.023 2.023 0 00.742-.71c.18-.28.271-.582.271-.884 0-.295-.088-.588-.261-.861a2.025 2.025 0 00-.713-.695l-12.83-7.4c-.198-.113-.393-.198-.582-.256l10.571 10.422zM15.008 13.123L4.35 23.684a2.21 2.21 0 00.662-.262l12.756-7.36c.264-.15.485-.355.656-.61.168-.251.258-.529.258-.813 0-.272-.081-.54-.236-.786a1.986 1.986 0 00-.638-.616l-2.799 1.614v-.004zM16.125 12l4.896-2.825 1.583.914c.896.516.896 1.354 0 1.871l-1.572.908L16.125 12z"/></svg>
                   <div className="text-left"><p className="text-[10px] leading-none font-normal uppercase tracking-wider">Download for</p><p className="leading-tight text-base">Android</p></div>
                 </motion.button>
@@ -413,9 +413,9 @@ export default function Home() {
           <div className="md:w-1/2 flex justify-center items-end relative h-[400px] md:h-auto mt-10 md:mt-0 pb-10">
             <motion.div 
               animate={{ y: [0, -15, 0] }} transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-              className="w-64 h-[500px] bg-white rounded-[3rem] p-3 shadow-[0_30px_60px_rgba(0,0,0,0.5)] border-8 border-gray-800 relative z-20 translate-y-20 md:translate-y-32"
+              className="w-64 h-[500px] bg-white dark:bg-black rounded-[3rem] p-3 shadow-[0_30px_60px_rgba(0,0,0,0.5)] border-8 border-gray-800 dark:border-gray-700 relative z-20 translate-y-20 md:translate-y-32 transition-colors duration-300"
             >
-              <div className="w-full h-full rounded-[2.2rem] overflow-hidden relative bg-gray-50">
+              <div className="w-full h-full rounded-[2.2rem] overflow-hidden relative bg-gray-50 dark:bg-gray-900">
                 {/* Dynamic Content inside phone */}
                 <img src={img01} alt="App UI" className="absolute inset-0 w-full h-full object-cover opacity-90" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0F2318] via-transparent to-transparent"></div>
@@ -425,7 +425,7 @@ export default function Home() {
                 </div>
               </div>
               {/* Phone Notch */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-gray-800 rounded-b-xl"></div>
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-gray-800 dark:bg-gray-700 rounded-b-xl transition-colors duration-300"></div>
             </motion.div>
           </div>
         </motion.section>
@@ -436,65 +436,65 @@ export default function Home() {
         <motion.section 
           id="contact" // THE ID IS HERE FOR SCROLLING
           initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}
-          className="mb-24 rounded-[3rem] bg-white shadow-xl shadow-gray-200/50 border border-gray-100 p-10 md:p-16"
+          className="mb-24 rounded-[3rem] bg-white dark:bg-[#0A1810] shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-white/5 p-10 md:p-16 transition-colors duration-300"
         >
           <div className="grid md:grid-cols-2 gap-16">
             
             {/* Left Side: Contact Info */}
             <motion.div variants={fadeUp} className="flex flex-col justify-center">
-              <p className="text-xs font-bold tracking-widest uppercase mb-2" style={{ color: '#7DC57A' }}>Get in Touch</p>
-              <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(2.5rem, 4vw, 3.5rem)', fontWeight: 700, color: '#0F2318', letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: '1.5rem' }}>
+              <p className="text-xs font-bold tracking-widest uppercase mb-2 text-[#7DC57A]">Get in Touch</p>
+              <h2 className="text-[clamp(2.5rem,4vw,3.5rem)] font-bold text-[#0F2318] dark:text-[#F5EDD8] leading-[1.1] tracking-[-0.02em] mb-6 transition-colors duration-300" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
                 Have a special request? <br/> Let Eva know.
               </h2>
-              <p className="text-gray-600 font-light leading-relaxed mb-10 max-w-md">
+              <p className="text-gray-600 dark:text-gray-400 font-light leading-relaxed mb-10 max-w-md transition-colors duration-300">
                 Whether you need a specific brand of unga, have a question about delivery zones, or want to partner with us—we are always here to help.
               </p>
 
               <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-[#EBF5EA] text-[#2D6A27] flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-[#EBF5EA] dark:bg-[#1A4D2E]/30 text-[#2D6A27] dark:text-[#7DC57A] flex items-center justify-center transition-colors duration-300">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
                   </div>
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Email Us</p>
-                    <p className="font-medium text-gray-900">hello@marketdays.co.ke</p>
+                    <p className="font-medium text-gray-900 dark:text-white transition-colors duration-300">hello@marketdays.co.ke</p>
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-[#EBF5EA] text-[#2D6A27] flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-[#EBF5EA] dark:bg-[#1A4D2E]/30 text-[#2D6A27] dark:text-[#7DC57A] flex items-center justify-center transition-colors duration-300">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.896-1.596-5.48-4.18-7.076-7.076l1.293-.97c.362-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg>
                   </div>
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Call Us</p>
-                    <p className="font-medium text-gray-900">+254 700 000 000</p>
+                    <p className="font-medium text-gray-900 dark:text-white transition-colors duration-300">+254 700 000 000</p>
                   </div>
                 </div>
               </div>
             </motion.div>
 
             {/* Right Side: Sleek Contact Form */}
-            <motion.div variants={fadeUp} className="bg-[#F9F7F3] rounded-[2rem] p-8 md:p-10 border border-[#E8E0D4]">
+            <motion.div variants={fadeUp} className="bg-[#F9F7F3] dark:bg-[#060D0A] rounded-[2rem] p-8 md:p-10 border border-[#E8E0D4] dark:border-white/5 transition-colors duration-300">
               <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-5">
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="name" className="text-xs font-bold text-gray-600 uppercase tracking-wide">Full Name</label>
-                  <input type="text" id="name" placeholder="John Doe" className="bg-white border border-gray-200 rounded-xl px-4 py-3.5 outline-none focus:border-[#7DC57A] transition-colors text-sm" />
+                  <label htmlFor="name" className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wide transition-colors duration-300">Full Name</label>
+                  <input type="text" id="name" placeholder="John Doe" className="bg-white dark:bg-[#0F2318] dark:text-white border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3.5 outline-none focus:border-[#7DC57A] dark:focus:border-[#7DC57A] transition-colors text-sm" />
                 </div>
                 
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="email" className="text-xs font-bold text-gray-600 uppercase tracking-wide">Email Address</label>
-                  <input type="email" id="email" placeholder="john@example.com" className="bg-white border border-gray-200 rounded-xl px-4 py-3.5 outline-none focus:border-[#7DC57A] transition-colors text-sm" />
+                  <label htmlFor="email" className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wide transition-colors duration-300">Email Address</label>
+                  <input type="email" id="email" placeholder="john@example.com" className="bg-white dark:bg-[#0F2318] dark:text-white border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3.5 outline-none focus:border-[#7DC57A] dark:focus:border-[#7DC57A] transition-colors text-sm" />
                 </div>
                 
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="message" className="text-xs font-bold text-gray-600 uppercase tracking-wide">Your Message</label>
-                  <textarea id="message" rows="4" placeholder="How can Eva help you today?" className="bg-white border border-gray-200 rounded-xl px-4 py-3.5 outline-none focus:border-[#7DC57A] transition-colors text-sm resize-none"></textarea>
+                  <label htmlFor="message" className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wide transition-colors duration-300">Your Message</label>
+                  <textarea id="message" rows="4" placeholder="How can Eva help you today?" className="bg-white dark:bg-[#0F2318] dark:text-white border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3.5 outline-none focus:border-[#7DC57A] dark:focus:border-[#7DC57A] transition-colors text-sm resize-none"></textarea>
                 </div>
 
                 <motion.button 
                   whileHover={buttonHover} whileTap={buttonTap} 
                   type="submit" 
-                  className="bg-[#0F2318] text-[#F5EDD8] font-bold text-sm py-4 rounded-xl mt-2 shadow-lg hover:shadow-xl transition-shadow"
+                  className="bg-[#0F2318] dark:bg-[#7DC57A] text-[#F5EDD8] dark:text-[#0F2318] font-bold text-sm py-4 rounded-xl mt-2 shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   Send Message
                 </motion.button>
@@ -574,31 +574,31 @@ function ProductCard({ product, featured }) {
   const price = product.variants?.length > 0 ? `KES ${parseFloat(product.variants[0].price).toLocaleString()}` : 'N/A';
 
   return (
-    <motion.div whileHover={{ y: -8 }} transition={{ type: "spring", stiffness: 300 }} className="rounded-3xl overflow-hidden flex flex-col group bg-white shadow-md border border-gray-100 cursor-pointer">
-      <div className="h-48 relative overflow-hidden bg-gray-50">
+    <motion.div whileHover={{ y: -8 }} transition={{ type: "spring", stiffness: 300 }} className="rounded-3xl overflow-hidden flex flex-col group bg-white dark:bg-[#0A1810] shadow-md border border-gray-100 dark:border-white/5 cursor-pointer transition-colors duration-300">
+      <div className="h-48 relative overflow-hidden bg-gray-50 dark:bg-black">
         {product.image ? (
           <motion.img whileHover={{ scale: 1.08 }} transition={{ duration: 0.6 }} src={product.image} alt={product.name} className="object-cover h-full w-full" />
         ) : (
-          <div className="flex flex-col items-center justify-center h-full gap-2 text-gray-300">
+          <div className="flex flex-col items-center justify-center h-full gap-2 text-gray-300 dark:text-gray-700">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1} className="w-12 h-12"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M4.5 21h15M3.75 3.75h16.5M12 3.75v13.5" /></svg>
           </div>
         )}
         {product.category?.name && (
-          <span className="absolute top-3 left-3 text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full bg-white/90 text-gray-800 backdrop-blur-md shadow-sm">
+          <span className="absolute top-3 left-3 text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full bg-white/90 dark:bg-black/60 text-gray-800 dark:text-gray-200 backdrop-blur-md shadow-sm transition-colors duration-300">
             {product.category.name}
           </span>
         )}
       </div>
 
       <div className="p-5 flex flex-col flex-grow">
-        <h3 className="font-semibold text-base mb-1 text-gray-900 leading-snug">{product.name}</h3>
-        <p className="text-xs leading-relaxed mb-5 flex-grow line-clamp-2 text-gray-500 font-light">{product.description}</p>
-        <div className="flex items-center justify-between pt-4 mt-auto border-t border-gray-100">
+        <h3 className="font-semibold text-base mb-1 text-gray-900 dark:text-white leading-snug transition-colors duration-300">{product.name}</h3>
+        <p className="text-xs leading-relaxed mb-5 flex-grow line-clamp-2 text-gray-500 dark:text-gray-400 font-light transition-colors duration-300">{product.description}</p>
+        <div className="flex items-center justify-between pt-4 mt-auto border-t border-gray-100 dark:border-white/5 transition-colors duration-300">
           <div>
-            <p className="text-[9px] font-bold tracking-widest uppercase mb-0.5 text-gray-400">from</p>
-            <span className="font-bold text-lg text-[#2D6A27]">{price}</span>
+            <p className="text-[9px] font-bold tracking-widest uppercase mb-0.5 text-gray-400 dark:text-gray-500">from</p>
+            <span className="font-bold text-lg text-[#2D6A27] dark:text-[#7DC57A] transition-colors duration-300">{price}</span>
           </div>
-          <Link to={`/products/${product.id}`} className="text-xs font-bold px-5 py-2.5 rounded-full transition-all bg-[#0F2318] text-white hover:bg-brand-brown">
+          <Link to={`/products/${product.id}`} className="text-xs font-bold px-5 py-2.5 rounded-full transition-all bg-[#0F2318] dark:bg-[#7DC57A] text-white dark:text-[#0F2318] hover:bg-brand-brown dark:hover:bg-white">
             View →
           </Link>
         </div>

@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* ─── THIS IS THE MAGIC LINE FOR TAILWIND v4 ─── */
+/* It tells Tailwind to listen to our React Toggle instead of your OS */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-brand-green: #1A4D2E;
   --color-brand-brown: #8B5A2B;
@@ -7,8 +11,7 @@
 }
 
 body {
-  background-color: var(--color-brand-cream);
-  color: #111827;
+  /* Removed the hardcoded colors so App.jsx can control the theme! */
   margin: 0;
   padding: 0;
 }

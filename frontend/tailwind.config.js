@@ -1,5 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  // 1. MUST be at the root level
+  darkMode: 'class', 
+  
+  // 2. MUST include all file extensions you use
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
