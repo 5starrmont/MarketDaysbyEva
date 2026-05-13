@@ -229,19 +229,19 @@ export default function Checkout() {
   // ══════════════════════════════════════════
   if (cartItems.length === 0) {
     return (
-      <div className="w-full min-h-[75vh] bg-[#F9F7F3] flex items-center justify-center p-4" style={{ fontFamily: "'Outfit', sans-serif" }}>
+      <div className="w-full min-h-[75vh] bg-[#F9F7F3] dark:bg-[#060D0A] flex items-center justify-center p-4 transition-colors duration-300" style={{ fontFamily: "'Outfit', sans-serif" }}>
         <motion.div 
           initial={{ opacity: 0, y: 40, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="bg-white rounded-[3rem] shadow-xl shadow-gray-200/50 border border-gray-100 p-16 md:p-24 text-center max-w-2xl w-full"
+          className="bg-white dark:bg-[#0A1810] rounded-[3rem] shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-white/5 p-16 md:p-24 text-center max-w-2xl w-full transition-colors duration-300"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-[#0F2318] mb-4" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+          <h2 className="text-4xl md:text-5xl font-bold text-[#0F2318] dark:text-[#F5EDD8] mb-4 transition-colors duration-300" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
             Nothing to checkout.
           </h2>
-          <p className="text-gray-500 mb-10 text-lg font-light max-w-md mx-auto">
+          <p className="text-gray-500 dark:text-gray-400 mb-10 text-lg font-light max-w-md mx-auto transition-colors duration-300">
             Your basket is currently empty. Let's find some fresh items for you.
           </p>
           <motion.div whileHover={buttonHover} whileTap={buttonTap} className="inline-block">
-            <Link to="/products" className="bg-[#0F2318] text-[#F5EDD8] px-10 py-4 rounded-full font-bold shadow-lg hover:shadow-[#0F2318]/20 transition-all flex items-center gap-3">
+            <Link to="/products" className="bg-[#0F2318] dark:bg-[#7DC57A] text-[#F5EDD8] dark:text-[#0F2318] px-10 py-4 rounded-full font-bold shadow-lg hover:shadow-[#0F2318]/20 dark:hover:bg-white transition-all flex items-center gap-3">
               Return to Shop
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
             </Link>
@@ -255,7 +255,7 @@ export default function Checkout() {
   // MAIN CHECKOUT UI
   // ══════════════════════════════════════════
   return (
-    <div className="w-full min-h-screen bg-[#F9F7F3] pb-24" style={{ fontFamily: "'Outfit', sans-serif" }}>
+    <div className="w-full min-h-screen bg-[#F9F7F3] dark:bg-[#060D0A] pb-24 transition-colors duration-300" style={{ fontFamily: "'Outfit', sans-serif" }}>
       
       {/* Sleek Page Header */}
       <div className="bg-[#0F2318] pt-16 pb-32 px-4 relative overflow-hidden rounded-b-[3rem] shadow-xl">
@@ -282,10 +282,10 @@ export default function Checkout() {
             variants={staggerContainer} initial="hidden" animate="visible" 
             className="lg:col-span-8 flex flex-col gap-6"
           >
-            <motion.div variants={fadeUp} className="bg-white rounded-[2.5rem] shadow-xl shadow-gray-200/40 border border-gray-100 p-8 md:p-12">
+            <motion.div variants={fadeUp} className="bg-white dark:bg-[#0A1810] rounded-[2.5rem] shadow-xl shadow-gray-200/40 dark:shadow-none border border-gray-100 dark:border-white/5 p-8 md:p-12 transition-colors duration-300">
               
               {errorMessage && (
-                <div className="mb-8 p-4 bg-red-50 text-red-700 border border-red-200 rounded-2xl text-sm font-bold flex items-center gap-3">
+                <div className="mb-8 p-4 bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/20 rounded-2xl text-sm font-bold flex items-center gap-3 transition-colors duration-300">
                   <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clipRule="evenodd" /></svg>
                   {errorMessage}
                 </div>
@@ -295,14 +295,14 @@ export default function Checkout() {
                 
                 {/* Section 1: Customer Details */}
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-6" style={{ fontFamily: "'Cormorant Garamond', serif" }}>1. Recipient Details</h3>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-[#F5EDD8] mb-6 transition-colors duration-300" style={{ fontFamily: "'Cormorant Garamond', serif" }}>1. Recipient Details</h3>
                   
                   {user ? (
-                    <div className="bg-[#EBF5EA]/50 p-6 rounded-2xl border border-[#7DC57A]/20 flex items-center justify-between">
+                    <div className="bg-[#EBF5EA]/50 dark:bg-[#1A4D2E]/20 p-6 rounded-2xl border border-[#7DC57A]/20 dark:border-[#7DC57A]/10 flex items-center justify-between transition-colors duration-300">
                       <div>
-                        <p className="text-[10px] font-black text-[#2D6A27] uppercase tracking-[0.2em] mb-1">Ordering As</p>
-                        <p className="text-xl font-bold text-[#0F2318]">{user.username}</p>
-                        <p className="text-sm text-gray-500 font-medium mt-0.5">{user.email}</p>
+                        <p className="text-[10px] font-black text-[#2D6A27] dark:text-[#7DC57A] uppercase tracking-[0.2em] mb-1 transition-colors duration-300">Ordering As</p>
+                        <p className="text-xl font-bold text-[#0F2318] dark:text-[#F5EDD8] transition-colors duration-300">{user.username}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mt-0.5 transition-colors duration-300">{user.email}</p>
                       </div>
                       <div className="w-12 h-12 rounded-full bg-[#7DC57A] text-[#0F2318] flex items-center justify-center text-lg font-black uppercase shadow-sm">
                         {user.username?.charAt(0) || 'U'}
@@ -310,28 +310,28 @@ export default function Checkout() {
                     </div>
                   ) : (
                     <div>
-                      <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">Full Name</label>
-                      <input type="text" name="name" required value={formData.name} onChange={handleChange} disabled={isSubmitting} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 focus:outline-none focus:bg-white focus:border-[#7DC57A] focus:ring-2 focus:ring-[#7DC57A]/20 transition-all font-medium text-gray-800" />
+                      <label className="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 transition-colors duration-300">Full Name</label>
+                      <input type="text" name="name" required value={formData.name} onChange={handleChange} disabled={isSubmitting} className="w-full bg-gray-50 dark:bg-[#0F2318] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:bg-white dark:focus:bg-[#060D0A] focus:border-[#7DC57A] dark:focus:border-[#7DC57A] focus:ring-2 focus:ring-[#7DC57A]/20 transition-all font-medium text-gray-800 dark:text-white" />
                     </div>
                   )}
                   
                   <div className="grid md:grid-cols-2 gap-6 mt-6">
                     <div>
-                      <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">Phone Number</label>
-                      <input type="tel" name="phone" required value={formData.phone} onChange={handleChange} disabled={isSubmitting} placeholder="07XX XXX XXX" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 focus:outline-none focus:bg-white focus:border-[#7DC57A] focus:ring-2 focus:ring-[#7DC57A]/20 transition-all font-medium text-gray-800" />
+                      <label className="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 transition-colors duration-300">Phone Number</label>
+                      <input type="tel" name="phone" required value={formData.phone} onChange={handleChange} disabled={isSubmitting} placeholder="07XX XXX XXX" className="w-full bg-gray-50 dark:bg-[#0F2318] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:bg-white dark:focus:bg-[#060D0A] focus:border-[#7DC57A] dark:focus:border-[#7DC57A] focus:ring-2 focus:ring-[#7DC57A]/20 transition-all font-medium text-gray-800 dark:text-white dark:placeholder-gray-500" />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">Apt / Notes (Optional)</label>
-                      <input type="text" name="addressNotes" value={formData.addressNotes} onChange={handleChange} disabled={isSubmitting} placeholder="House number, gate color..." className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 focus:outline-none focus:bg-white focus:border-[#7DC57A] focus:ring-2 focus:ring-[#7DC57A]/20 transition-all font-medium text-gray-800" />
+                      <label className="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 transition-colors duration-300">Apt / Notes (Optional)</label>
+                      <input type="text" name="addressNotes" value={formData.addressNotes} onChange={handleChange} disabled={isSubmitting} placeholder="House number, gate color..." className="w-full bg-gray-50 dark:bg-[#0F2318] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:bg-white dark:focus:bg-[#060D0A] focus:border-[#7DC57A] dark:focus:border-[#7DC57A] focus:ring-2 focus:ring-[#7DC57A]/20 transition-all font-medium text-gray-800 dark:text-white dark:placeholder-gray-500" />
                     </div>
                   </div>
                 </div>
 
-                <hr className="border-gray-100" />
+                <hr className="border-gray-100 dark:border-white/5 transition-colors duration-300" />
 
                 {/* Section 2: Delivery Location */}
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-6" style={{ fontFamily: "'Cormorant Garamond', serif" }}>2. Delivery Destination</h3>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-[#F5EDD8] mb-6 transition-colors duration-300" style={{ fontFamily: "'Cormorant Garamond', serif" }}>2. Delivery Destination</h3>
                   
                   {/* Saved Addresses */}
                   {user && savedAddresses.length > 0 && (
@@ -341,14 +341,14 @@ export default function Checkout() {
                           whileHover={{ y: -2 }}
                           key={addr.id} 
                           onClick={() => handleSelectAddress(addr)}
-                          className={`cursor-pointer p-5 rounded-2xl border-2 transition-all ${
+                          className={`cursor-pointer p-5 rounded-2xl border-2 transition-all duration-300 ${
                             selectedSavedAddress?.id === addr.id 
                             ? 'border-[#7DC57A] bg-[#7DC57A]/5 shadow-md' 
-                            : 'border-gray-100 hover:border-gray-300 hover:bg-gray-50'
+                            : 'border-gray-100 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-50 dark:hover:bg-white/5'
                           }`}
                         >
                           <div className="flex items-center justify-between mb-2">
-                            <p className={`text-xs font-black uppercase tracking-widest ${selectedSavedAddress?.id === addr.id ? 'text-[#2D6A27]' : 'text-gray-900'}`}>
+                            <p className={`text-xs font-black uppercase tracking-widest transition-colors duration-300 ${selectedSavedAddress?.id === addr.id ? 'text-[#2D6A27] dark:text-[#7DC57A]' : 'text-gray-900 dark:text-gray-300'}`}>
                               {addr.address_type}
                             </p>
                             {selectedSavedAddress?.id === addr.id && (
@@ -357,7 +357,7 @@ export default function Checkout() {
                               </div>
                             )}
                           </div>
-                          <p className="text-sm text-gray-500 font-medium truncate">{addr.location_name}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 font-medium truncate transition-colors duration-300">{addr.location_name}</p>
                         </motion.div>
                       ))}
                       
@@ -365,10 +365,10 @@ export default function Checkout() {
                       <motion.div 
                         whileHover={{ y: -2 }}
                         onClick={() => handleSelectAddress(null)}
-                        className={`cursor-pointer p-5 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center transition-all ${
+                        className={`cursor-pointer p-5 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center transition-all duration-300 ${
                           !selectedSavedAddress 
                           ? 'border-[#C4892A] bg-[#C4892A]/5 text-[#C4892A]' 
-                          : 'border-gray-200 text-gray-400 hover:border-gray-400 hover:text-gray-600'
+                          : 'border-gray-200 dark:border-white/10 text-gray-400 dark:text-gray-500 hover:border-gray-400 dark:hover:border-white/30 hover:text-gray-600 dark:hover:text-gray-300'
                         }`}
                       >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-6 h-6 mb-1"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
@@ -384,40 +384,40 @@ export default function Checkout() {
                         initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
                         className="space-y-4 overflow-hidden"
                       >
-                        <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-xl flex items-start gap-3">
+                        <div className="bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30 p-4 rounded-xl flex items-start gap-3 transition-colors duration-300">
                           <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5"><path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" /></svg>
-                          <p className="text-sm text-gray-600 font-medium">Search for your general area, then <strong className="text-gray-900">tap directly on the map</strong> to drop the pin on your exact doorstep.</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300 font-medium transition-colors duration-300">Search for your general area, then <strong className="text-gray-900 dark:text-white">tap directly on the map</strong> to drop the pin on your exact doorstep.</p>
                         </div>
                         
                         <div className="flex gap-3 relative z-20">
                           <input 
                             type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} 
                             placeholder="Search road or estate..." 
-                            className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:bg-white focus:border-[#7DC57A] font-medium text-gray-800 transition-colors text-sm" 
+                            className="flex-1 bg-gray-50 dark:bg-[#0F2318] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:bg-white dark:focus:bg-[#0A1810] focus:border-[#7DC57A] dark:focus:border-[#7DC57A] font-medium text-gray-800 dark:text-white dark:placeholder-gray-500 transition-colors text-sm" 
                             onKeyDown={(e) => { e.key === 'Enter' && handleSearch(e); }} 
                           />
                           <button 
                             type="button" onClick={handleSearch} 
-                            className="bg-[#0F2318] text-[#F5EDD8] px-6 rounded-xl font-bold text-sm hover:bg-[#1A2E18] transition-colors shadow-sm"
+                            className="bg-[#0F2318] dark:bg-[#7DC57A] text-[#F5EDD8] dark:text-[#0F2318] px-6 rounded-xl font-bold text-sm hover:bg-[#1A2E18] dark:hover:bg-white transition-colors shadow-sm"
                           >
                             {isSearching ? '...' : 'Search'}
                           </button>
                           
                           {/* Search Dropdown */}
                           {searchResults.length > 0 && (
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl max-h-64 overflow-y-auto divide-y divide-gray-50">
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#0F2318] border border-gray-100 dark:border-white/10 rounded-2xl shadow-2xl max-h-64 overflow-y-auto divide-y divide-gray-50 dark:divide-white/5 transition-colors duration-300">
                               {searchResults.map((result) => (
-                                <button key={result.place_id} type="button" onClick={() => selectLocation(result)} className="w-full text-left px-5 py-4 hover:bg-gray-50 transition-colors">
-                                  <p className="font-bold text-gray-900 text-sm mb-0.5">{result.display_name.split(',')[0]}</p>
-                                  <p className="text-xs text-gray-500 font-medium truncate">{result.display_name}</p>
+                                <button key={result.place_id} type="button" onClick={() => selectLocation(result)} className="w-full text-left px-5 py-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                  <p className="font-bold text-gray-900 dark:text-white text-sm mb-0.5 transition-colors duration-300">{result.display_name.split(',')[0]}</p>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium truncate transition-colors duration-300">{result.display_name}</p>
                                 </button>
                               ))}
                             </div>
                           )}
                         </div>
 
-                        {/* Map Canvas */}
-                        <div className="h-96 w-full rounded-[2rem] overflow-hidden border border-gray-200 shadow-inner relative z-0">
+                        {/* Map Canvas with Dark Mode Invert Magic */}
+                        <div className="h-96 w-full rounded-[2rem] overflow-hidden border border-gray-200 dark:border-white/10 shadow-inner relative z-0 transition-colors duration-300 dark:[&_.leaflet-layer]:invert dark:[&_.leaflet-layer]:hue-rotate-180 dark:[&_.leaflet-layer]:contrast-75 dark:[&_.leaflet-layer]:brightness-95">
                           <MapContainer center={[pinLocation.lat, pinLocation.lng]} zoom={14} scrollWheelZoom={true} style={{ height: '100%', width: '100%', zIndex: 0 }}>
                             <TileLayer url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}" attribution="Map data ©Google" />
                             <MapController center={[pinLocation.lat, pinLocation.lng]} />
@@ -441,7 +441,7 @@ export default function Checkout() {
             initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.6 }}
             className="lg:col-span-4 sticky top-32"
           >
-            <div className="bg-[#0F2318] rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden text-[#F5EDD8]">
+            <div className="bg-[#0F2318] dark:bg-[#0A1810] rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden text-[#F5EDD8] dark:border dark:border-white/5 transition-colors duration-300">
               {/* Premium Background Accent */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 blur-[80px] rounded-full pointer-events-none"></div>
 
@@ -498,7 +498,7 @@ export default function Checkout() {
                 whileTap={!isSubmitting ? buttonTap : {}} 
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="w-full bg-[#C4892A] text-[#0F2318] py-4 rounded-xl font-bold text-lg hover:bg-[#b07b25] transition-colors shadow-[0_10px_20px_rgba(196,137,42,0.3)] flex justify-center items-center gap-3 mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-[#C4892A] text-[#0F2318] py-4 rounded-xl font-bold text-lg hover:bg-[#b07b25] dark:hover:bg-[#d69832] transition-colors shadow-[0_10px_20px_rgba(196,137,42,0.3)] flex justify-center items-center gap-3 mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? 'Processing...' : 'Confirm Order'}
                 {!isSubmitting && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>}

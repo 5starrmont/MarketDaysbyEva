@@ -122,7 +122,7 @@ function AppContent() {
         >
           <nav className={`transition-all duration-500 w-full ${
               isScrolled 
-              ? 'max-w-6xl bg-[#0F2318] border border-white/10 rounded-full shadow-2xl py-3 px-6 md:px-8' 
+              ? 'max-w-6xl bg-[#0F2318] border border-white/10 rounded-full shadow-2xl py-3 px-6 lg:px-8' 
               : 'max-w-full bg-[#0F2318] py-4 px-6 md:px-12 border-b border-white/5 rounded-none'
             }`}
           >
@@ -141,8 +141,8 @@ function AppContent() {
                 </div>
               </Link>
 
-              {/* Desktop Navigation */}
-              <div className="hidden md:flex gap-6 lg:gap-8 font-medium items-center text-sm tracking-wide">
+              {/* Desktop Navigation (Changed from md:flex to lg:flex) */}
+              <div className="hidden lg:flex gap-6 xl:gap-8 font-medium items-center text-sm tracking-wide">
                 <Link to="/" className="text-[#F5EDD8]/80 hover:text-[#C4892A] transition-colors">Home</Link>
                 <Link to="/products" className="text-[#F5EDD8]/80 hover:text-[#C4892A] transition-colors">Shop</Link>
                 <Link to="/#download" className="text-[#F5EDD8]/80 hover:text-[#C4892A] transition-colors">Download</Link>
@@ -191,9 +191,9 @@ function AppContent() {
                 )}
               </div>
 
-              {/* Mobile Menu Hamburger Toggle */}
+              {/* Mobile Menu Hamburger Toggle (Changed from md:hidden to lg:hidden) */}
               <button 
-                className="md:hidden text-[#F5EDD8] p-2 relative z-50 focus:outline-none" 
+                className="lg:hidden text-[#F5EDD8] p-2 relative z-50 focus:outline-none" 
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
                 <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" className="w-7 h-7">

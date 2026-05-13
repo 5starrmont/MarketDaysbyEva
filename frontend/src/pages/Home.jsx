@@ -4,15 +4,22 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 
 // Logo Imports
-import brandLogo from '../assets/logos/logo.jpeg';
-import brandBadge from '../assets/logos/Logo_on_dark_green_surface_202605122234.jpeg'; 
+import brandLogoTransparent from '../assets/logos/logo-removebg-preview.png'; 
 import bannerLogo from '../assets/logos/Logo_on_dark_green_surface_ 2.jpeg'; 
 
-// Asset Imports
-import img01 from '../assets/images/01.jpeg';
-import imgTrolley from '../assets/images/flat-lay-vegetable-concept-arrangement.jpg';
-import imgMeat from '../assets/images/Premium_culinary_photography._High-quality,_perfectly_202605130024.jpeg';
-import imgSukuma1 from '../assets/images/Sukuma_Wiki_and_Roma_tomatoes_202605130018.jpeg';
+// Asset Imports - ALL TRANSPARENT PNGS & WEBP
+import img01 from '../assets/images/01-removebg-preview.png';
+import imgMeat from '../assets/images/Premium_culinary_photography._High-quality__perfectly_202605130024-removebg-preview.png';
+import imgSukuma1 from '../assets/images/Sukuma_Wiki_and_Roma_tomatoes_202605130018-removebg-preview.png';
+import imgFruit from '../assets/images/Fruit-PNG-Picture.webp';
+import imgMilk from '../assets/images/brookside-milk.png'; 
+import imgSecondaryBag from '../assets/images/rs=w_1280.webp';
+import imgCart from '../assets/images/full-shopping-cart-with-groceries-cut-out-stock-png-removebg-preview.png';
+import imgEggs from '../assets/images/fresh-white-farm-eggs-in-wooden-crate-with-green-leaves-free-png-removebg-preview.png';
+import imgButter from '../assets/images/img-2massociates-blue-band-butter-450g-removebg-preview.png';
+import imgAjab from '../assets/images/ajab-maize-flour-2kg-wholesale-nairobi-kenya-300x300-removebg-preview.png';
+import imgApples from '../assets/images/apples-removebg-preview.png';
+import imgAvocado from '../assets/images/avocado-removebg-preview.png';
 
 /* ─── Font injection ──────────────────────────────────────────── */
 const fontLink = document.createElement('link');
@@ -131,18 +138,19 @@ export default function Home() {
     <div className="w-full overflow-hidden" style={{ fontFamily: "'Outfit', sans-serif" }}>
 
       {/* ══════════════════════════════════════════
-          1. GRAND HERO WITH PHOTO COLLAGE
+          1. GRAND HERO WITH FAINT ORBITING CLUSTER
       ══════════════════════════════════════════ */}
       <section className="min-h-[85vh] flex flex-col md:flex-row items-center px-4 relative max-w-7xl mx-auto pt-10 pb-20 gap-10">
+        
         <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-brand-green/10 dark:bg-[#7DC57A]/10 blur-[120px] rounded-full pointer-events-none -z-10"></div>
 
         {/* Left Content */}
-        <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="md:w-1/2 z-10 text-left pt-10 md:pt-0">
-          <motion.div variants={heroReveal} className="mb-8 inline-block p-4 bg-white dark:bg-[#0A1810] rounded-3xl shadow-xl shadow-brand-green/5 border border-gray-100 dark:border-white/5">
-             <img src={brandLogo} alt="Market Days by Eva" className="h-16 md:h-20 w-auto object-contain rounded-xl" />
+        <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="md:w-1/2 z-10 text-left pt-10 md:pt-0 relative">
+          <motion.div variants={heroReveal} className="mb-6 inline-block">
+             <img src={brandLogoTransparent} alt="Market Days by Eva" className="h-24 md:h-28 w-auto object-contain drop-shadow-xl" />
           </motion.div>
           
-          <motion.span variants={heroReveal} className="text-brand-green dark:text-[#7DC57A] font-bold tracking-widest uppercase text-sm mb-6 inline-block bg-brand-green/10 dark:bg-[#7DC57A]/10 px-4 py-1.5 rounded-full">
+          <motion.span variants={heroReveal} className="text-[#C4892A] text-2xl md:text-3xl block mb-6" style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic' }}>
             Your Personal Concierge
           </motion.span>
           
@@ -154,30 +162,137 @@ export default function Home() {
             From daily supermarket restocks to prime butchery cuts and fresh pantry staples. We handle the shopping so you can handle life.
           </motion.p>
           
-          <motion.div variants={heroReveal} className="flex flex-col sm:flex-row gap-4">
+          <motion.div variants={heroReveal} className="flex flex-col sm:flex-row gap-4 relative z-20">
             <motion.div whileHover={buttonHover} whileTap={buttonTap}>
               <Link to="/products" className="block bg-brand-brown dark:bg-[#7DC57A] text-white dark:text-[#0F2318] px-8 py-4 rounded-full font-bold text-center shadow-lg shadow-brand-brown/30 transition-colors">
                  Shop the Market
               </Link>
             </motion.div>
             <motion.div whileHover={buttonHover} whileTap={buttonTap}>
-              <Link to="/login" className="block bg-white dark:bg-transparent text-gray-800 dark:text-[#F5EDD8] border border-gray-200 dark:border-white/20 px-8 py-4 rounded-full font-bold text-center hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+              <Link to="/login" className="block bg-white dark:bg-[#0A1810] text-gray-800 dark:text-[#F5EDD8] border border-gray-200 dark:border-white/20 px-8 py-4 rounded-full font-bold text-center hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                  Create Account
               </Link>
             </motion.div>
           </motion.div>
         </motion.div>
 
-        {/* Right Content */}
-        <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="md:w-1/2 relative h-[500px] lg:h-[600px] w-full mt-10 md:mt-0">
-          <motion.img variants={imageReveal} animate={{ y: [0, -10, 0] }} transition={{ y: { repeat: Infinity, duration: 6, ease: "easeInOut" } }} src={img01} alt="Grocery Bag" className="absolute top-4 right-10 w-3/5 h-[350px] object-cover rounded-[2rem] shadow-2xl z-20 border-4 border-white dark:border-[#0A1810]" />
-          <motion.img variants={imageReveal} animate={{ y: [0, 10, 0] }} transition={{ y: { repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 } }} src={imgTrolley} alt="Fresh Produce" className="absolute bottom-6 left-0 w-[55%] h-[220px] object-cover rounded-3xl shadow-2xl z-30 border-8 border-brand-cream dark:border-[#060D0A]" />
-          <motion.img variants={imageReveal} animate={{ y: [0, -8, 0], rotate: [4, 4, 4] }} transition={{ y: { repeat: Infinity, duration: 4, ease: "easeInOut", delay: 2 }, rotate: { repeat: Infinity, duration: 4, ease: "easeInOut", delay: 2 } }} src={imgMeat} alt="Prime Meat" className="absolute top-[40%] right-0 w-[180px] h-[180px] object-cover rounded-3xl shadow-xl z-10" />
-          <motion.img variants={imageReveal} animate={{ y: [0, -5, 0], rotate: [-5, -5, -5] }} transition={{ y: { repeat: Infinity, duration: 5, ease: "easeInOut", delay: 0.5 }, rotate: { repeat: Infinity, duration: 5, ease: "easeInOut", delay: 0.5 } }} src={brandBadge} alt="Market Days Quality" className="absolute -top-2 left-16 w-32 h-32 object-cover rounded-full shadow-2xl z-40 border-4 border-white dark:border-[#0A1810]" />
+        {/* Right Content - FAINT ORBITING CLUSTER */}
+        <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="md:w-1/2 relative h-[500px] lg:h-[600px] w-full mt-10 md:mt-0 flex items-center justify-center">
+          
+          <div className="absolute inset-0 bg-brand-green/10 dark:bg-[#7DC57A]/10 blur-[80px] rounded-full w-3/4 h-3/4 m-auto z-0 pointer-events-none"></div>
+
+          {/* 5. MAIN BAG (Center Core - Solid & Large) */}
+          <motion.div className="absolute inset-0 m-auto z-[20] w-[65%] md:w-[70%] flex items-center justify-center pointer-events-none">
+            <motion.div animate={{ y: [-10, 10, -10], x: [5, -5, 5], rotate: [-1, 1, -1] }} transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }} className="w-full flex justify-center">
+              <motion.img variants={imageReveal} src={img01} alt="Grocery Bag" className="w-full object-contain drop-shadow-[0_30px_50px_rgba(0,0,0,0.35)] dark:drop-shadow-[0_30px_50px_rgba(0,0,0,0.6)]" />
+            </motion.div>
+          </motion.div>
+
+          {/* ─── Faint Orbiting Objects (Small, opacity-50) ─── */}
+          
+          {/* 1. Cart (Top Left Orbit) */}
+          <motion.div className="absolute top-[10%] left-[10%] md:left-[15%] w-[14%] md:w-[16%] z-[10] opacity-50 pointer-events-none">
+            <motion.img 
+              animate={{ x: [0, 20, 0, -20, 0], y: [-20, 0, 20, 0, -20], rotate: [0, 10, 0, -10, 0] }} 
+              transition={{ repeat: Infinity, duration: 10, ease: "linear" }} 
+              src={imgCart} alt="Shopping Cart" className="w-full object-contain drop-shadow-md" 
+            />
+          </motion.div>
+
+          {/* 2. Ajab Flour (Top Center Orbit) */}
+          <motion.div className="absolute top-[5%] left-[45%] w-[12%] md:w-[14%] z-[12] opacity-50 pointer-events-none">
+            <motion.img 
+              animate={{ x: [0, -15, 0, 15, 0], y: [15, 0, -15, 0, 15], rotate: [0, -15, 0, 15, 0] }} 
+              transition={{ repeat: Infinity, duration: 12, ease: "linear" }} 
+              src={imgAjab} alt="Ajab Flour" className="w-full object-contain drop-shadow-md" 
+            />
+          </motion.div>
+
+          {/* 3. Meat (Top Right Orbit) */}
+          <motion.div className="absolute top-[15%] right-[10%] md:right-[15%] w-[14%] md:w-[16%] z-[10] opacity-50 pointer-events-none">
+            <motion.img 
+              animate={{ x: [0, 15, 0, -15, 0], y: [-15, 0, 15, 0, -15], rotate: [0, 8, 0, -8, 0] }} 
+              transition={{ repeat: Infinity, duration: 9, ease: "linear" }} 
+              src={imgMeat} alt="Prime Meat" className="w-full object-contain drop-shadow-md" 
+            />
+          </motion.div>
+
+          {/* 4. Avocado (Mid Right Orbit) */}
+          <motion.div className="absolute top-[40%] right-[2%] md:right-[5%] w-[10%] md:w-[12%] z-[15] opacity-50 pointer-events-none">
+            <motion.img 
+              animate={{ x: [0, -20, 0, 20, 0], y: [-20, 0, 20, 0, -20], rotate: [0, -20, 0, 20, 0] }} 
+              transition={{ repeat: Infinity, duration: 11, ease: "linear" }} 
+              src={imgAvocado} alt="Fresh Avocado" className="w-full object-contain drop-shadow-md" 
+            />
+          </motion.div>
+
+          {/* 5. Secondary Bag (Bottom Right Orbit) */}
+          <motion.div className="absolute bottom-[20%] right-[8%] md:right-[12%] w-[15%] md:w-[18%] z-[10] opacity-50 pointer-events-none">
+            <motion.img 
+              animate={{ x: [0, 15, 0, -15, 0], y: [15, 0, -15, 0, 15], rotate: [0, 12, 0, -12, 0] }} 
+              transition={{ repeat: Infinity, duration: 13, ease: "linear" }} 
+              src={imgSecondaryBag} alt="Secondary Groceries" className="w-full object-contain drop-shadow-md" 
+            />
+          </motion.div>
+
+          {/* 6. Fruit (Bottom Center Orbit) */}
+          <motion.div className="absolute bottom-[5%] right-[35%] md:right-[40%] w-[14%] md:w-[16%] z-[25] opacity-50 pointer-events-none">
+            <motion.img 
+              animate={{ x: [0, -15, 0, 15, 0], y: [-15, 0, 15, 0, -15], rotate: [0, -10, 0, 10, 0] }} 
+              transition={{ repeat: Infinity, duration: 10.5, ease: "linear" }} 
+              src={imgFruit} alt="Fresh Fruits" className="w-full object-contain drop-shadow-md" 
+            />
+          </motion.div>
+
+          {/* 7. Eggs (Bottom Left Orbit) */}
+          <motion.div className="absolute bottom-[15%] left-[15%] md:left-[20%] w-[15%] md:w-[18%] z-[15] opacity-50 pointer-events-none">
+            <motion.img 
+              animate={{ x: [0, 20, 0, -20, 0], y: [20, 0, -20, 0, 20], rotate: [0, 5, 0, -5, 0] }} 
+              transition={{ repeat: Infinity, duration: 9.5, ease: "linear" }} 
+              src={imgEggs} alt="Farm Fresh Eggs" className="w-full object-contain drop-shadow-md" 
+            />
+          </motion.div>
+
+          {/* 8. Sukuma Wiki (Mid Left Orbit) */}
+          <motion.div className="absolute top-[50%] left-[2%] md:left-[5%] w-[14%] md:w-[16%] z-[10] opacity-50 pointer-events-none">
+            <motion.img 
+              animate={{ x: [0, -15, 0, 15, 0], y: [-15, 0, 15, 0, -15], rotate: [0, -8, 0, 8, 0] }} 
+              transition={{ repeat: Infinity, duration: 11.5, ease: "linear" }} 
+              src={imgSukuma1} alt="Fresh Sukuma" className="w-full object-contain drop-shadow-md" 
+            />
+          </motion.div>
+
+          {/* 9. Milk (Mid Top Left Orbit) */}
+          <motion.div className="absolute top-[25%] left-[20%] md:left-[25%] w-[12%] md:w-[14%] z-[12] opacity-50 pointer-events-none">
+            <motion.img 
+              animate={{ x: [0, 15, 0, -15, 0], y: [15, 0, -15, 0, 15], rotate: [0, 15, 0, -15, 0] }} 
+              transition={{ repeat: Infinity, duration: 8.5, ease: "linear" }} 
+              src={imgMilk} alt="Brookside Milk" className="w-full object-contain drop-shadow-md" 
+            />
+          </motion.div>
+
+          {/* 10. Apples (Tucked behind bag, Center Right) */}
+          <motion.div className="absolute top-[35%] right-[25%] md:right-[30%] w-[12%] md:w-[14%] z-[5] opacity-50 pointer-events-none">
+            <motion.img 
+              animate={{ x: [0, -10, 0, 10, 0], y: [-10, 0, 10, 0, -10], rotate: [0, -12, 0, 12, 0] }} 
+              transition={{ repeat: Infinity, duration: 7.5, ease: "linear" }} 
+              src={imgApples} alt="Fresh Apples" className="w-full object-contain drop-shadow-md" 
+            />
+          </motion.div>
+          
+          {/* 11. Butter (Tucked behind bag, Center Bottom) */}
+          <motion.div className="absolute bottom-[25%] left-[45%] w-[10%] md:w-[12%] z-[5] opacity-50 pointer-events-none">
+            <motion.img 
+              animate={{ x: [0, 12, 0, -12, 0], y: [12, 0, -12, 0, 12], rotate: [0, 10, 0, -10, 0] }} 
+              transition={{ repeat: Infinity, duration: 9.8, ease: "linear" }} 
+              src={imgButter} alt="Blue Band Butter" className="w-full object-contain drop-shadow-md" 
+            />
+          </motion.div>
+
         </motion.div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4 mt-6">
         {/* ══════════════════════════════════════════
             2. VALUE PROP (I SHOP. YOU RELAX.)
         ══════════════════════════════════════════ */}
@@ -514,7 +629,8 @@ export default function Home() {
             
             {/* Column 1: Brand */}
             <div className="col-span-1 md:col-span-1">
-              <img src={brandLogo} alt="Market Days" className="h-14 rounded-xl mb-6 bg-white p-1" />
+              {/* FIXED: Uses brandLogoTransparent so it matches Hero import */}
+              <img src={brandLogoTransparent} alt="Market Days" className="h-14 rounded-xl mb-6 bg-white p-1" />
               <p className="text-[#F5EDD8]/60 text-sm leading-relaxed mb-6">
                 Your personal concierge for everyday shopping. We curate, shop, and deliver the freshest essentials directly to your door.
               </p>
