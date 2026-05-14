@@ -16,6 +16,7 @@ import { useAuth } from './context/AuthContext';
 import ManagerHeader from './components/ManagerHeader'; 
 import DashboardHome from './pages/manager/DashboardHome'; 
 import ManageInventory from './pages/manager/ManageInventory';
+import ManageOrders from './pages/manager/ManageOrders'; // <-- NEW IMPORT
 
 // --- Theme Context ---
 import { ThemeProvider, useTheme } from './context/ThemeContext'; 
@@ -122,6 +123,8 @@ function AppContent() {
             <Routes>
               <Route path="/manager/dashboard" element={<DashboardHome />} />
               <Route path="/manager/inventory" element={<ManageInventory />} />
+              {/* ─── NEW ROUTE: DISPATCH HUB ─── */}
+              <Route path="/manager/orders" element={<ManageOrders />} /> 
             </Routes>
           </div>
         </div>

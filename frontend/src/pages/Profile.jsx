@@ -272,10 +272,15 @@ export default function Profile() {
                   const canCancel = isPending && isWithinTenMinutes(order.created_at);
                   const isExpanded = expandedOrderId === order.id;
 
-                  // Safely parse totals to avoid NaN
+                  // ─── MATH FIX: SAFELY CALCULATE SUBTOTAL FROM ITEMS ───
                   const orderTotal = parseFloat(order.total_amount) || 0;
-                  const orderDeliveryFee = parseFloat(order.delivery_fee) || 0;
-                  const orderSubtotal = orderTotal - orderDeliveryFee;
+                  
+                  const orderSubtotal = order.items?.reduce((sum, item) => {
+                    return sum + ((parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0));
+                  }, 0) || 0;
+
+                  // Derive the delivery fee to gracefully handle old orders where it was missing
+                  const orderDeliveryFee = Math.max(0, orderTotal - orderSubtotal);
 
                   return (
                     <motion.div variants={fadeUp} key={order.id} className={`bg-white dark:bg-[#0A1810] rounded-[2.5rem] border transition-all duration-500 overflow-hidden ${isExpanded ? 'border-[#7DC57A] dark:border-[#7DC57A] shadow-2xl dark:shadow-none' : 'border-gray-100 dark:border-white/5 shadow-xl shadow-gray-200/40 dark:shadow-none hover:border-gray-200 dark:hover:border-white/20'}`}>
