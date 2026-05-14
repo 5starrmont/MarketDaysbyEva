@@ -62,7 +62,7 @@ function PinDrop({ position, onPinDrop }) {
 
 /* ─── Main Component ─────────────────────────────────────────── */
 export default function Checkout() {
-  const { cartItems, cartTotal, clearCart } = useCart();
+  const { cartItems, clearCart } = useCart();
   const { user } = useAuth(); 
   const navigate = useNavigate();
   
@@ -88,6 +88,51 @@ export default function Checkout() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // ══════════════════════════════════════════
+  // DYNAMIC PRICING ENGINE
+  // ══════════════════════════════════════════
+  const evaluatedCart = cartItems.map(item => {
+    const originalPrice = parseFloat(item.variant.price) || 0;
+    let unitPrice = originalPrice;
+    let appliedOffer = null; // <-- FIXED: Added this variable to track the offer
+    
+    const discPrice = parseFloat(item.variant.discount_price) || 0;
+    const bulkPriceVal = parseFloat(item.variant.bulk_price) || 0;
+    const bulkThreshold = parseFloat(item.variant.bulk_threshold) || 0;
+    const qty = parseFloat(item.quantity) || 0;
+
+    let hasValidDiscount = discPrice > 0 && discPrice < originalPrice;
+    let hasValidBulk = bulkPriceVal > 0 && bulkThreshold > 0 && bulkPriceVal < originalPrice;
+
+    // 1. Apply standard discount
+    if (hasValidDiscount) {
+      unitPrice = discPrice;
+      appliedOffer = 'discount'; // <-- FIXED: Set offer type
+    }
+
+    // 2. Override with bulk price if threshold is reached (and is cheaper than discount)
+    if (hasValidBulk && qty >= bulkThreshold) {
+      if (!hasValidDiscount || bulkPriceVal < discPrice) {
+        unitPrice = bulkPriceVal;
+        appliedOffer = 'bulk'; // <-- FIXED: Set offer type
+      }
+    }
+
+    const itemTotal = unitPrice * qty;
+
+    return {
+      ...item,
+      originalPrice,
+      unitPrice,
+      itemTotal,
+      appliedOffer // <-- FIXED: Return the applied offer
+    };
+  });
+
+  // Mathematically derive the final cart subtotal ensuring all bulk/discount rules are respected
+  const dynamicCartSubtotal = evaluatedCart.reduce((total, item) => total + item.itemTotal, 0);
+
 
   // 1. Fetch Delivery Configs
   useEffect(() => {
@@ -180,7 +225,8 @@ export default function Checkout() {
     } catch (err) { setDisplayLocationName("Pinned Location"); }
   };
 
-  const finalTotal = cartTotal + deliveryFee;
+  // Uses the evaluated cart subtotal, not the raw one
+  const finalTotal = dynamicCartSubtotal + deliveryFee;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -198,17 +244,19 @@ export default function Checkout() {
       ? `[${selectedSavedAddress.address_type}] ${displayLocationName}` 
       : displayLocationName;
 
+    // Use the dynamically evaluated items to ensure backend receives correct unitPrice
     const orderPayload = {
       customer_name: user ? user.username : formData.name, 
       customer_phone: formData.phone,
       delivery_address: `${formData.addressNotes} | Location: ${locationString} (Distance: ${distanceKm.toFixed(1)}km, Lat: ${pinLocation.lat.toFixed(6)}, Lng: ${pinLocation.lng.toFixed(6)})`,
       delivery_fee: deliveryFee, 
       total_amount: finalTotal,  
-      items: cartItems.map(item => ({
+      items: evaluatedCart.map(item => ({
         product_id: item.product.id,
         variant_id: item.variant.id,
         quantity: item.quantity,
-        price: item.variant.price
+        price: item.unitPrice, // Send the calculated discounted/bulk price!
+        applied_offer: item.appliedOffer // <-- FIXED: Make sure the offer type is sent!
       }))
     };
 
@@ -447,15 +495,15 @@ export default function Checkout() {
 
               <h3 className="text-2xl font-bold mb-8" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Order Summary</h3>
               
-              {/* Mini Item List */}
+              {/* Mini Item List (Evaluated with Discounts) */}
               <div className="divide-y divide-white/10 mb-6 max-h-48 overflow-y-auto pr-2 no-scrollbar">
-                {cartItems.map((item) => (
+                {evaluatedCart.map((item) => (
                   <div key={`${item.product.id}-${item.variant.id}`} className="py-3 flex justify-between gap-4">
                     <div>
                       <p className="font-bold text-[#F5EDD8] text-sm line-clamp-1">{item.product.name}</p>
                       <p className="text-[10px] font-bold text-[#F5EDD8]/50 uppercase tracking-widest mt-1">Qty: {item.quantity}</p>
                     </div>
-                    <p className="font-bold text-[#F5EDD8] text-sm">KES {(item.variant.price * item.quantity).toLocaleString()}</p>
+                    <p className="font-bold text-[#F5EDD8] text-sm">KES {item.itemTotal.toLocaleString()}</p>
                   </div>
                 ))}
               </div>
@@ -463,7 +511,7 @@ export default function Checkout() {
               <div className="space-y-4 pt-6 border-t border-white/10">
                 <div className="flex justify-between items-center text-[#F5EDD8]/70">
                   <span className="font-light">Subtotal</span>
-                  <span className="font-medium">KES {cartTotal.toLocaleString()}</span>
+                  <span className="font-medium">KES {dynamicCartSubtotal.toLocaleString()}</span>
                 </div>
                 
                 <div className="flex justify-between items-start text-[#F5EDD8]/70 pb-6 border-b border-white/10">

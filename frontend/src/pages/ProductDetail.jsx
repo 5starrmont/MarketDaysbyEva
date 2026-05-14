@@ -49,6 +49,7 @@ export default function ProductDetail() {
   const handleAddToCart = () => {
     const finalQuantity = parseFloat(quantity);
     if (product && selectedVariant && !isNaN(finalQuantity) && finalQuantity > 0) {
+      // NOTE: CartContext will use the final quantity to recalculate bulk rules on the cart page!
       addToCart(product, selectedVariant, finalQuantity); 
       setAdded(true); 
       setTimeout(() => setAdded(false), 2000); 
@@ -57,6 +58,46 @@ export default function ProductDetail() {
 
   const incrementQuantity = () => setQuantity(prev => Number(prev) + 0.5);
   const decrementQuantity = () => setQuantity(prev => (Number(prev) > 0.5 ? Number(prev) - 0.5 : 0.5));
+
+  // ══════════════════════════════════════════
+  // DYNAMIC PRICING ENGINE
+  // ══════════════════════════════════════════
+  let unitPrice = 0;
+  let originalPrice = 0;
+  let appliedOffer = null; // 'discount' or 'bulk'
+  let bulkThreshold = 0;
+  let bulkPriceVal = 0;
+  let discPrice = 0;
+  
+  let hasValidDiscount = false;
+  let hasValidBulk = false;
+
+  if (selectedVariant) {
+    originalPrice = parseFloat(selectedVariant.price) || 0;
+    unitPrice = originalPrice;
+    
+    discPrice = parseFloat(selectedVariant.discount_price) || 0;
+    bulkPriceVal = parseFloat(selectedVariant.bulk_price) || 0;
+    bulkThreshold = parseFloat(selectedVariant.bulk_threshold) || 0;
+    const currentQty = parseFloat(quantity) || 0;
+
+    hasValidDiscount = discPrice > 0 && discPrice < originalPrice;
+    hasValidBulk = bulkPriceVal > 0 && bulkThreshold > 0 && bulkPriceVal < originalPrice;
+
+    // 1. Apply standard discount first
+    if (hasValidDiscount) {
+      unitPrice = discPrice;
+      appliedOffer = 'discount';
+    }
+
+    // 2. Override with bulk price if threshold is reached (Ensure bulk is cheaper than discount)
+    if (hasValidBulk && currentQty >= bulkThreshold) {
+      if (!hasValidDiscount || bulkPriceVal < discPrice) {
+        unitPrice = bulkPriceVal;
+        appliedOffer = 'bulk';
+      }
+    }
+  }
 
   // ══════════════════════════════════════════
   // LOADING STATE
@@ -112,10 +153,8 @@ export default function ProductDetail() {
           className="bg-white dark:bg-[#0A1810] rounded-[3rem] shadow-2xl shadow-gray-200/50 dark:shadow-none overflow-hidden border border-gray-100 dark:border-white/5 flex flex-col lg:flex-row transition-colors duration-300"
         >
           
-          {/* ─── Left Side: Product Image (Upgraded to Glassmorphism) ─── */}
+          {/* ─── Left Side: Product Image ─── */}
           <motion.div variants={fadeUp} className="lg:w-1/2 bg-gray-50/50 dark:bg-white/[0.02] backdrop-blur-3xl relative min-h-[400px] lg:min-h-[600px] flex items-center justify-center p-12 overflow-hidden group transition-colors duration-300 border-b lg:border-b-0 lg:border-r border-gray-100 dark:border-white/5">
-            
-            {/* Brightened green glow behind image in dark mode */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-white dark:bg-[#7DC57A] rounded-full blur-[70px] opacity-70 dark:opacity-15 pointer-events-none transition-colors duration-300"></div>
             
             {product.image ? (
@@ -126,9 +165,7 @@ export default function ProductDetail() {
               />
             ) : (
               <div className="flex flex-col items-center justify-center text-gray-300 dark:text-gray-700 relative z-10 transition-colors duration-300">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1} className="h-32 w-32 mb-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1} className="h-32 w-32 mb-6"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                 <span className="text-lg font-medium tracking-wide">No Image Available</span>
               </div>
             )}
@@ -154,14 +191,95 @@ export default function ProductDetail() {
 
             <div className="bg-gray-50 dark:bg-[#0F2318]/50 border border-gray-100 dark:border-white/5 rounded-[2rem] p-8 mb-10 transition-colors duration-300">
               
-              {/* Unit Price Display */}
+              {/* ─── Variant Selection (Dynamic with Badges) ─── */}
+              {product.variants && product.variants.length > 1 && (
+                <div className="mb-8 border-b border-gray-200 dark:border-white/10 pb-6">
+                  <h3 className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-3 transition-colors duration-300">Choose Size</h3>
+                  <div className="flex flex-wrap gap-3">
+                    {product.variants.map((variant) => {
+                      const isSelected = selectedVariant?.id === variant.id;
+                      const hasDiscBadge = parseFloat(variant.discount_price) > 0 && parseFloat(variant.discount_price) < parseFloat(variant.price);
+                      const hasBulkBadge = parseFloat(variant.bulk_price) > 0 && parseFloat(variant.bulk_threshold) > 0;
+
+                      return (
+                        <button
+                          key={variant.id}
+                          onClick={() => {
+                            setSelectedVariant(variant);
+                            setQuantity(1); // Reset quantity when changing sizes
+                          }}
+                          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold border transition-all duration-300 ${
+                            isSelected
+                              ? 'border-[#2D6A27] bg-[#EBF5EA] text-[#2D6A27] dark:border-[#7DC57A] dark:bg-[#1A4D2E]/30 dark:text-[#7DC57A] shadow-sm'
+                              : 'border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-white/20 bg-white dark:bg-transparent'
+                          }`}
+                        >
+                          {variant.unit_size}
+                          
+                          {/* Mini Offer Badges inside buttons */}
+                          {(hasDiscBadge || hasBulkBadge) && (
+                            <div className="flex items-center gap-1 ml-1">
+                              {hasDiscBadge && <span className={`text-[8px] px-1.5 py-0.5 rounded uppercase tracking-widest ${isSelected ? 'bg-[#C4892A]/20 text-[#C4892A]' : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'}`}>-%</span>}
+                              {hasBulkBadge && <span className={`text-[8px] px-1.5 py-0.5 rounded uppercase tracking-widest ${isSelected ? 'bg-[#2D6A27]/20 text-[#2D6A27] dark:bg-[#7DC57A]/20 dark:text-[#7DC57A]' : 'bg-[#EBF5EA] text-[#2D6A27] dark:bg-[#1A4D2E]/30 dark:text-[#7DC57A]'}`}>Bulk</span>}
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Unit Price Display with Offers */}
               {selectedVariant ? (
                 <div className="mb-8">
                   <h3 className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-2 transition-colors duration-300">Unit Price</h3>
-                  <p className="text-3xl font-black text-gray-900 dark:text-[#7DC57A] transition-colors duration-300">
-                    KES {parseFloat(selectedVariant.price).toLocaleString()}
-                    <span className="text-xs font-bold text-gray-400 dark:text-gray-500 ml-3 uppercase tracking-widest transition-colors duration-300">per {selectedVariant.unit_size}</span>
-                  </p>
+                  
+                  <div className="flex items-center flex-wrap gap-3">
+                    <p className="text-3xl font-black text-gray-900 dark:text-[#7DC57A] transition-colors duration-300">
+                      KES {unitPrice.toLocaleString()}
+                    </p>
+                    
+                    {/* Show original slashed price if an offer is active */}
+                    {(appliedOffer === 'discount' || appliedOffer === 'bulk') && (
+                      <span className="text-xl text-gray-400 dark:text-gray-500 line-through decoration-gray-400 dark:decoration-gray-500">
+                        KES {originalPrice.toLocaleString()}
+                      </span>
+                    )}
+                    
+                    <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest transition-colors duration-300 mt-1">
+                      per {selectedVariant.unit_size}
+                    </span>
+                  </div>
+
+                  {/* Dynamic Offer Notification Text */}
+                  <div className="h-6 mt-2">
+                    <AnimatePresence mode="wait">
+                      {appliedOffer === 'bulk' && (
+                        <motion.p key="bulk" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-xs font-bold text-[#2D6A27] dark:text-[#7DC57A]">
+                          ✨ Bulk pricing applied for ordering {bulkThreshold}+ units!
+                        </motion.p>
+                      )}
+                      
+                      {appliedOffer === 'discount' && hasValidBulk && quantity < bulkThreshold && bulkPriceVal < discPrice && (
+                        <motion.p key="disc-nudge" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-xs font-bold text-[#C4892A]">
+                          🎉 Discount active! Add {bulkThreshold - quantity} more to unlock bulk price (KES {bulkPriceVal.toLocaleString()}/unit).
+                        </motion.p>
+                      )}
+
+                      {appliedOffer === 'discount' && (!hasValidBulk || quantity >= bulkThreshold || bulkPriceVal >= discPrice) && (
+                        <motion.p key="disc-only" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-xs font-bold text-[#C4892A]">
+                          🎉 Discount price applied!
+                        </motion.p>
+                      )}
+
+                      {!appliedOffer && hasValidBulk && quantity < bulkThreshold && (
+                        <motion.p key="nudge" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-xs font-bold text-[#C4892A]">
+                          💡 Add {bulkThreshold - quantity} more to unlock bulk price (KES {bulkPriceVal.toLocaleString()}/unit)!
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
               ) : (
                 <div className="mb-8 p-4 bg-orange-50 dark:bg-orange-500/10 border border-orange-100 dark:border-orange-500/20 rounded-xl transition-colors duration-300">
@@ -204,7 +322,7 @@ export default function ProductDetail() {
               <div>
                 <div className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-1 transition-colors duration-300">Total Order Value</div>
                 <div className="text-4xl font-black text-[#2D6A27] dark:text-[#7DC57A] transition-colors duration-300">
-                  {selectedVariant ? `KES ${(selectedVariant.price * (parseFloat(quantity) || 0)).toLocaleString()}` : '---'}
+                  {selectedVariant ? `KES ${(unitPrice * (parseFloat(quantity) || 0)).toLocaleString()}` : '---'}
                 </div>
               </div>
               

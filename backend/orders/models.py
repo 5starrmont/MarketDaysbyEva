@@ -80,6 +80,9 @@ class OrderItem(models.Model):
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=1.00)
     
     price_at_order = models.DecimalField(max_digits=10, decimal_places=2) 
+    
+    # NEW FIELD: To track if a discount or bulk offer was used at the time of purchase
+    applied_offer = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
         return f"{self.quantity}x {self.variant} (Order #{self.order.id})"

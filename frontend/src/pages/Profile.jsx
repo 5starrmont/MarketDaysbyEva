@@ -272,6 +272,11 @@ export default function Profile() {
                   const canCancel = isPending && isWithinTenMinutes(order.created_at);
                   const isExpanded = expandedOrderId === order.id;
 
+                  // Safely parse totals to avoid NaN
+                  const orderTotal = parseFloat(order.total_amount) || 0;
+                  const orderDeliveryFee = parseFloat(order.delivery_fee) || 0;
+                  const orderSubtotal = orderTotal - orderDeliveryFee;
+
                   return (
                     <motion.div variants={fadeUp} key={order.id} className={`bg-white dark:bg-[#0A1810] rounded-[2.5rem] border transition-all duration-500 overflow-hidden ${isExpanded ? 'border-[#7DC57A] dark:border-[#7DC57A] shadow-2xl dark:shadow-none' : 'border-gray-100 dark:border-white/5 shadow-xl shadow-gray-200/40 dark:shadow-none hover:border-gray-200 dark:hover:border-white/20'}`}>
                       <div onClick={() => toggleExpand(order.id)} className="p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 cursor-pointer group relative">
@@ -283,7 +288,7 @@ export default function Profile() {
                             </span>
                             <p className="text-[10px] font-black text-gray-300 dark:text-gray-600 uppercase tracking-[0.2em] transition-colors duration-300">Order #{order.id}</p>
                           </div>
-                          <p className="text-3xl font-black text-[#0F2318] dark:text-[#F5EDD8] transition-colors duration-300">KES {parseFloat(order.total_amount).toLocaleString()}</p>
+                          <p className="text-3xl font-black text-[#0F2318] dark:text-[#F5EDD8] transition-colors duration-300">KES {orderTotal.toLocaleString()}</p>
                           <p className="text-sm text-gray-400 dark:text-gray-500 mt-2 font-light line-clamp-1 flex items-center gap-2 transition-colors duration-300">
                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
                              {order.delivery_address.split('|')[0]}
@@ -300,20 +305,75 @@ export default function Profile() {
                         {isExpanded && (
                           <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="bg-gray-50/70 dark:bg-[#060D0A]/50 border-t border-gray-100 dark:border-white/5 overflow-hidden transition-colors duration-300">
                             <div className="p-8">
-                              <h4 className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-6 transition-colors duration-300">Order Breakdown</h4>
-                              <div className="space-y-3 mb-10">
-                                {order.items?.length > 0 ? order.items.map((item, i) => (
-                                  <div key={i} className="flex justify-between items-center bg-white dark:bg-[#0F2318] p-5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm transition-colors duration-300">
-                                    <div>
-                                      <p className="text-base font-bold text-[#0F2318] dark:text-white transition-colors duration-300">{item.product_name || `Market Item`}</p>
-                                      <p className="text-xs text-gray-400 dark:text-gray-500 font-medium transition-colors duration-300">Quantity: {item.quantity}</p>
+                              <h4 className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-6 transition-colors duration-300">Detailed Receipt</h4>
+                              
+                              {/* Itemized Breakdown with Prominent Offer Badges */}
+                              <div className="space-y-3 mb-8">
+                                {order.items?.length > 0 ? order.items.map((item, i) => {
+                                  const itemPrice = parseFloat(item.price) || 0;
+                                  const itemQty = parseFloat(item.quantity) || 0;
+                                  const itemTotal = itemPrice * itemQty;
+                                  
+                                  const offerType = (item.applied_offer || '').toLowerCase().trim();
+
+                                  return (
+                                    <div key={i} className="flex justify-between items-center bg-white dark:bg-[#0F2318] p-5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm transition-colors duration-300">
+                                      <div className="flex gap-4 items-center">
+                                        <div className="w-12 h-12 rounded-xl bg-gray-50 dark:bg-[#0A1810] flex items-center justify-center font-black text-gray-500 dark:text-gray-400 shadow-inner border border-gray-100 dark:border-white/5">
+                                          {itemQty}x
+                                        </div>
+                                        <div>
+                                          <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                                            <p className="text-base font-bold text-[#0F2318] dark:text-white transition-colors duration-300">
+                                              {item.product_name || `Market Item`}
+                                            </p>
+                                            
+                                            {/* HIGHLY VISIBLE OFFER BADGES */}
+                                            {offerType === 'bulk' && (
+                                              <span className="text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded-md bg-[#EBF5EA] text-[#2D6A27] dark:bg-[#1A4D2E]/30 dark:text-[#7DC57A] border border-[#2D6A27]/20">
+                                                Bulk Offer Applied
+                                              </span>
+                                            )}
+                                            {offerType === 'discount' && (
+                                              <span className="text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded-md bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400 border border-red-200">
+                                                Discount Applied
+                                              </span>
+                                            )}
+                                          </div>
+                                          
+                                          <p className="text-xs text-gray-400 dark:text-gray-500 font-medium transition-colors duration-300">
+                                            @ KES {itemPrice.toLocaleString()} each
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <p className="text-lg font-black text-[#2D6A27] dark:text-[#7DC57A] transition-colors duration-300">
+                                        KES {itemTotal.toLocaleString()}
+                                      </p>
                                     </div>
-                                    <p className="text-lg font-black text-[#2D6A27] dark:text-[#7DC57A] transition-colors duration-300">KES {parseFloat(item.price).toLocaleString()}</p>
+                                  );
+                                }) : <p className="text-sm text-gray-400 dark:text-gray-500 italic transition-colors duration-300">Order details unavailable.</p>}
+                              </div>
+
+                              {/* Math Breakdown (Subtotal, Fee, Total) */}
+                              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-white/10 flex justify-end">
+                                <div className="w-full sm:w-1/2 space-y-3">
+                                  <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
+                                    <span>Subtotal</span>
+                                    <span>KES {orderSubtotal.toLocaleString()}</span>
                                   </div>
-                                )) : <p className="text-sm text-gray-400 dark:text-gray-500 italic transition-colors duration-300">Order details unavailable.</p>}
+                                  <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400 pb-3 border-b border-gray-100 dark:border-white/5">
+                                    <span>Delivery Fee</span>
+                                    <span>{orderDeliveryFee === 0 ? 'FREE' : `KES ${orderDeliveryFee.toLocaleString()}`}</span>
+                                  </div>
+                                  <div className="flex justify-between text-lg font-black text-[#0F2318] dark:text-white pt-1">
+                                    <span>Total</span>
+                                    <span className="text-[#2D6A27] dark:text-[#7DC57A]">KES {orderTotal.toLocaleString()}</span>
+                                  </div>
+                                </div>
                               </div>
                               
-                              <div className="flex flex-col sm:flex-row justify-between items-center gap-6 pt-8 border-t border-gray-200 dark:border-white/10 transition-colors duration-300">
+                              {/* Footer / Cancel Logic */}
+                              <div className="flex flex-col sm:flex-row justify-between items-center gap-6 pt-8 mt-8 border-t border-gray-200 dark:border-white/10 transition-colors duration-300">
                                 <div className="text-[11px] text-gray-400 dark:text-gray-500 max-w-xs text-center sm:text-left leading-relaxed transition-colors duration-300">
                                   {isPending ? (canCancel ? "Eva is currently picking your items. You have a limited window to cancel this order." : "Your items are already being packed. Cancellation is no longer available.") : "This order has already been finalized."}
                                 </div>

@@ -20,6 +20,8 @@ class OrderItemCreateSerializer(serializers.Serializer):
     variant_id = serializers.IntegerField()
     quantity = serializers.DecimalField(max_digits=10, decimal_places=2)
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    # Accept the applied offer from React's checkout payload
+    applied_offer = serializers.CharField(max_length=50, required=False, allow_null=True, allow_blank=True)
 
 class OrderSerializer(serializers.ModelSerializer):
     # This remains write_only so it handles the incoming checkout payload properly
@@ -45,7 +47,8 @@ class OrderSerializer(serializers.ModelSerializer):
                 order=order,
                 variant_id=item_data['variant_id'],
                 quantity=item_data['quantity'],
-                price_at_order=item_data['price'] 
+                price_at_order=item_data['price'],
+                applied_offer=item_data.get('applied_offer') # Save the offer to the DB
             )
             
         return order
@@ -60,7 +63,8 @@ class OrderSerializer(serializers.ModelSerializer):
             {
                 'product_name': str(item.variant) if item.variant else "Unknown Item",
                 'quantity': item.quantity,
-                'price': item.price_at_order
+                'price': item.price_at_order,
+                'applied_offer': item.applied_offer # Send it back to React for the receipt badge
             }
             for item in instance.items.all()
         ]

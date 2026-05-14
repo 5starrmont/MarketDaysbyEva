@@ -24,7 +24,9 @@ export default function Shop() {
   useEffect(() => {
     axios.get('http://127.0.0.1:8000/api/inventory/products/')
       .then(response => {
-        setProducts(response.data);
+        // STRICT FILTER: Only keep products where is_active is true
+        const activeProducts = response.data.filter(product => product.is_active);
+        setProducts(activeProducts);
         setLoading(false);
       })
       .catch(error => {
@@ -67,7 +69,6 @@ export default function Shop() {
           SHOP HERO
       ══════════════════════════════════════════ */}
       <div className="bg-[#0F2318] pt-12 pb-24 px-4 relative overflow-hidden rounded-b-[3rem] shadow-xl">
-        {/* Subtle background noise/patterns */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}></div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-brand-green/20 dark:bg-[#7DC57A]/10 blur-[100px] rounded-full pointer-events-none"></div>
 
@@ -155,7 +156,7 @@ export default function Shop() {
               <svg fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" className="w-10 h-10"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
             </div>
             <p className="text-xl font-bold text-gray-900 dark:text-white mb-2" style={{ fontFamily: "'Cormorant Garamond', serif" }}>No products available.</p>
-            <p className="text-gray-500 dark:text-gray-400">Please ensure your Django backend is running and inventory is active.</p>
+            <p className="text-gray-500 dark:text-gray-400">Please check back later for fresh stock.</p>
           </motion.div>
         ) : filteredProducts.length === 0 ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white dark:bg-[#0A1810] border border-gray-100 dark:border-white/5 p-16 rounded-[2.5rem] text-center shadow-sm transition-colors duration-300">
@@ -176,53 +177,138 @@ export default function Shop() {
             variants={staggerContainer} initial="hidden" animate="visible"
             className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
           >
-            {filteredProducts.map(product => {
-              const price = product.variants?.length > 0 ? `KES ${parseFloat(product.variants[0].price).toLocaleString()}` : 'N/A';
-              
-              return (
-                <motion.div 
-                  variants={fadeUp} key={product.id} 
-                  whileHover={{ y: -8 }} transition={{ type: "spring", stiffness: 300 }} 
-                  className="rounded-3xl overflow-hidden flex flex-col group bg-white dark:bg-[#0A1810] shadow-md border border-gray-100 dark:border-white/5 cursor-pointer transition-colors duration-300"
-                >
-                  <div className="h-56 relative overflow-hidden bg-gray-50 dark:bg-black">
-                    {product.image ? (
-                      <motion.img whileHover={{ scale: 1.08 }} transition={{ duration: 0.6 }} src={product.image} alt={product.name} className="object-cover h-full w-full" />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-full gap-2 text-gray-300 dark:text-gray-700">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1} className="w-12 h-12"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M4.5 21h15M3.75 3.75h16.5M12 3.75v13.5" /></svg>
-                      </div>
-                    )}
-                    {product.category?.name && (
-                      <span className="absolute top-4 left-4 text-[10px] font-bold tracking-widest uppercase px-4 py-1.5 rounded-full bg-white/90 dark:bg-black/60 text-gray-900 dark:text-gray-200 backdrop-blur-md shadow-sm border border-gray-100 dark:border-white/10 transition-colors duration-300">
-                        {product.category.name}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="p-6 flex flex-col flex-grow">
-                    <h3 className="font-bold text-lg mb-2 text-gray-900 dark:text-white leading-snug group-hover:text-[#2D6A27] dark:group-hover:text-[#7DC57A] transition-colors" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-                      {product.name}
-                    </h3>
-                    <p className="text-sm leading-relaxed mb-6 flex-grow line-clamp-2 text-gray-500 dark:text-gray-400 font-light transition-colors duration-300">
-                      {product.description}
-                    </p>
-                    <div className="flex items-center justify-between pt-5 mt-auto border-t border-gray-100 dark:border-white/5 transition-colors duration-300">
-                      <div>
-                        <p className="text-[10px] font-bold tracking-[0.2em] uppercase mb-1 text-gray-400 dark:text-gray-500 transition-colors duration-300">from</p>
-                        <span className="font-black text-xl text-[#2D6A27] dark:text-[#7DC57A] transition-colors duration-300">{price}</span>
-                      </div>
-                      <Link to={`/products/${product.id}`} className="text-xs font-bold px-6 py-3 rounded-full transition-all bg-[#0F2318] dark:bg-[#7DC57A] text-white dark:text-[#0F2318] hover:bg-[#C4892A] dark:hover:bg-white hover:shadow-lg">
-                        View →
-                      </Link>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
+            {filteredProducts.map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
           </motion.div>
         )}
       </div>
     </div>
+  );
+}
+
+/* ─── SMART PRODUCT CARD (Handles Offers, Discounts & Dynamic Descriptions) ─── */
+function ProductCard({ product }) {
+  let displayPrice = 0;
+  let originalPrice = 0;
+  let firstVariantHasDiscount = false;
+  
+  let maxDiscountPct = 0;
+  let hasBulkOffer = false;
+  let offerTexts = []; // Used to build the dynamic description
+
+  // 1. Calculate Offers across all variants
+  if (product.variants && product.variants.length > 0) {
+    const firstVariant = product.variants[0];
+    originalPrice = parseFloat(firstVariant.price || 0);
+    const discPrice = parseFloat(firstVariant.discount_price);
+    
+    // Set base display price (First Variant determines storefront price)
+    if (discPrice && discPrice < originalPrice) {
+      displayPrice = discPrice;
+      firstVariantHasDiscount = true;
+    } else {
+      displayPrice = originalPrice;
+    }
+
+    // Determine Badges & Descriptions globally for the product
+    product.variants.forEach(v => {
+      const p = parseFloat(v.price || 0);
+      const d = parseFloat(v.discount_price);
+      const bPrice = parseFloat(v.bulk_price);
+      const bThresh = parseInt(v.bulk_threshold);
+
+      let vOffers = [];
+
+      if (d && p > 0 && d < p) {
+        const pct = Math.round((1 - (d / p)) * 100);
+        if (pct > maxDiscountPct) maxDiscountPct = pct;
+        vOffers.push(`${pct}% OFF`);
+      }
+      
+      if (bPrice && bThresh && p > 0) {
+        hasBulkOffer = true;
+        vOffers.push('Bulk Offer');
+      }
+
+      // If this variant has any offers, note it down for the description
+      if (vOffers.length > 0) {
+        const variantLabel = v.unit_size ? v.unit_size : 'Standard size';
+        offerTexts.push(`${variantLabel} (${vOffers.join(' & ')})`);
+      }
+    });
+  }
+
+  // Generate dynamic description
+  const enhancedDescription = offerTexts.length > 0
+    ? (product.description ? `${product.description} ` : '') + `✨ Offers on ${product.name}: ${offerTexts.join(', ')}.`
+    : product.description;
+
+  const priceFormatted = displayPrice > 0 ? `KES ${displayPrice.toLocaleString()}` : 'N/A';
+  const originalPriceFormatted = originalPrice > 0 ? `KES ${originalPrice.toLocaleString()}` : '';
+
+  return (
+    <motion.div whileHover={{ y: -8 }} transition={{ type: "spring", stiffness: 300 }} className="rounded-3xl overflow-hidden flex flex-col group bg-white dark:bg-[#0A1810] shadow-md border border-gray-100 dark:border-white/5 cursor-pointer transition-colors duration-300">
+      
+      {/* ─── IMAGE & BADGES ─── */}
+      <div className="h-48 relative overflow-hidden bg-gray-50 dark:bg-black">
+        {product.image ? (
+          <motion.img whileHover={{ scale: 1.08 }} transition={{ duration: 0.6 }} src={product.image} alt={product.name} className="object-cover h-full w-full" />
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full gap-2 text-gray-300 dark:text-gray-700">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1} className="w-12 h-12"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M4.5 21h15M3.75 3.75h16.5M12 3.75v13.5" /></svg>
+          </div>
+        )}
+        
+        {/* Category Tag (Top Left) */}
+        {product.category?.name && (
+          <span className="absolute top-3 left-3 text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full bg-white/90 dark:bg-black/60 text-gray-800 dark:text-gray-200 backdrop-blur-md shadow-sm transition-colors duration-300">
+            {product.category.name}
+          </span>
+        )}
+
+        {/* Offer Badges (Top Right) */}
+        <div className="absolute top-3 right-3 flex flex-col gap-1.5 items-end">
+          {maxDiscountPct > 0 && (
+            <span className="text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-md bg-red-500 text-white shadow-md">
+              -{maxDiscountPct}% OFF
+            </span>
+          )}
+          {hasBulkOffer && (
+            <span className="text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-md bg-[#7DC57A] text-[#0F2318] shadow-md">
+              BULK OFFER
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* ─── PRODUCT DETAILS ─── */}
+      <div className="p-5 flex flex-col flex-grow">
+        <h3 className="font-semibold text-base mb-1 text-gray-900 dark:text-white leading-snug transition-colors duration-300">{product.name}</h3>
+        
+        {/* Description mapped with dynamic offer text (Line clamp increased to 3) */}
+        <p className="text-xs leading-relaxed mb-5 flex-grow line-clamp-3 text-gray-500 dark:text-gray-400 font-light transition-colors duration-300">
+          {enhancedDescription}
+        </p>
+        
+        <div className="flex items-center justify-between pt-4 mt-auto border-t border-gray-100 dark:border-white/5 transition-colors duration-300">
+          <div>
+            <p className="text-[9px] font-bold tracking-widest uppercase mb-0.5 text-gray-400 dark:text-gray-500">
+              {product.variants?.length > 1 ? "from" : "price"}
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-lg text-[#2D6A27] dark:text-[#7DC57A] transition-colors duration-300">{priceFormatted}</span>
+              {/* Show original slashed price if discounted */}
+              {firstVariantHasDiscount && (
+                <span className="text-xs text-gray-400 dark:text-gray-500 line-through decoration-gray-400 dark:decoration-gray-500">{originalPriceFormatted}</span>
+              )}
+            </div>
+          </div>
+          <Link to={`/products/${product.id}`} className="text-xs font-bold px-5 py-2.5 rounded-full transition-all bg-[#0F2318] dark:bg-[#7DC57A] text-white dark:text-[#0F2318] hover:bg-brand-brown dark:hover:bg-white">
+            View →
+          </Link>
+        </div>
+      </div>
+    </motion.div>
   );
 }

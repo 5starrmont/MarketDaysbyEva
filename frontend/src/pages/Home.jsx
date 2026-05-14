@@ -128,7 +128,8 @@ export default function Home() {
     axios
       .get('http://127.0.0.1:8000/api/inventory/products/')
       .then((res) => {
-        setFeaturedProducts(res.data.slice(0, 8));
+        const activeProducts = res.data.filter(product => product.is_active);
+        setFeaturedProducts(activeProducts.slice(0, 8));
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -447,7 +448,7 @@ export default function Home() {
           ) : (
             <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {featuredProducts.map((product, idx) => (
-                <ProductCard key={product.id} product={product} featured={idx === 0} />
+                <ProductCard key={product.id} product={product} />
               ))}
             </motion.div>
           )}
@@ -629,7 +630,6 @@ export default function Home() {
             
             {/* Column 1: Brand */}
             <div className="col-span-1 md:col-span-1">
-              {/* FIXED: Uses brandLogoTransparent so it matches Hero import */}
               <img src={brandLogoTransparent} alt="Market Days" className="h-14 rounded-xl mb-6 bg-white p-1" />
               <p className="text-[#F5EDD8]/60 text-sm leading-relaxed mb-6">
                 Your personal concierge for everyday shopping. We curate, shop, and deliver the freshest essentials directly to your door.
@@ -685,12 +685,70 @@ export default function Home() {
   );
 }
 
-/* ─── Product card sub-component ──────────────────────────────── */
-function ProductCard({ product, featured }) {
-  const price = product.variants?.length > 0 ? `KES ${parseFloat(product.variants[0].price).toLocaleString()}` : 'N/A';
+/* ─── SMART PRODUCT CARD (Handles Offers, Discounts & Dynamic Descriptions) ─── */
+function ProductCard({ product }) {
+  let displayPrice = 0;
+  let originalPrice = 0;
+  let firstVariantHasDiscount = false;
+  
+  let maxDiscountPct = 0;
+  let hasBulkOffer = false;
+  let offerTexts = []; // Used to build the dynamic description
+
+  // 1. Calculate Offers across all variants
+  if (product.variants && product.variants.length > 0) {
+    const firstVariant = product.variants[0];
+    originalPrice = parseFloat(firstVariant.price || 0);
+    const discPrice = parseFloat(firstVariant.discount_price);
+    
+    // Set base display price (First Variant determines storefront price)
+    if (discPrice && discPrice < originalPrice) {
+      displayPrice = discPrice;
+      firstVariantHasDiscount = true;
+    } else {
+      displayPrice = originalPrice;
+    }
+
+    // Determine Badges & Descriptions globally for the product
+    product.variants.forEach(v => {
+      const p = parseFloat(v.price || 0);
+      const d = parseFloat(v.discount_price);
+      const bPrice = parseFloat(v.bulk_price);
+      const bThresh = parseInt(v.bulk_threshold);
+
+      let vOffers = [];
+
+      if (d && p > 0 && d < p) {
+        const pct = Math.round((1 - (d / p)) * 100);
+        if (pct > maxDiscountPct) maxDiscountPct = pct;
+        vOffers.push(`${pct}% OFF`);
+      }
+      
+      if (bPrice && bThresh && p > 0) {
+        hasBulkOffer = true;
+        vOffers.push('Bulk Offer');
+      }
+
+      // If this variant has any offers, note it down for the description
+      if (vOffers.length > 0) {
+        const variantLabel = v.unit_size ? v.unit_size : 'Standard size';
+        offerTexts.push(`${variantLabel} (${vOffers.join(' & ')})`);
+      }
+    });
+  }
+
+  // Generate dynamic description
+  const enhancedDescription = offerTexts.length > 0
+    ? (product.description ? `${product.description} ` : '') + `✨ Offers on ${product.name}: ${offerTexts.join(', ')}.`
+    : product.description;
+
+  const priceFormatted = displayPrice > 0 ? `KES ${displayPrice.toLocaleString()}` : 'N/A';
+  const originalPriceFormatted = originalPrice > 0 ? `KES ${originalPrice.toLocaleString()}` : '';
 
   return (
     <motion.div whileHover={{ y: -8 }} transition={{ type: "spring", stiffness: 300 }} className="rounded-3xl overflow-hidden flex flex-col group bg-white dark:bg-[#0A1810] shadow-md border border-gray-100 dark:border-white/5 cursor-pointer transition-colors duration-300">
+      
+      {/* ─── IMAGE & BADGES ─── */}
       <div className="h-48 relative overflow-hidden bg-gray-50 dark:bg-black">
         {product.image ? (
           <motion.img whileHover={{ scale: 1.08 }} transition={{ duration: 0.6 }} src={product.image} alt={product.name} className="object-cover h-full w-full" />
@@ -699,20 +757,50 @@ function ProductCard({ product, featured }) {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1} className="w-12 h-12"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M4.5 21h15M3.75 3.75h16.5M12 3.75v13.5" /></svg>
           </div>
         )}
+        
+        {/* Category Tag (Top Left) */}
         {product.category?.name && (
           <span className="absolute top-3 left-3 text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full bg-white/90 dark:bg-black/60 text-gray-800 dark:text-gray-200 backdrop-blur-md shadow-sm transition-colors duration-300">
             {product.category.name}
           </span>
         )}
+
+        {/* Offer Badges (Top Right) */}
+        <div className="absolute top-3 right-3 flex flex-col gap-1.5 items-end">
+          {maxDiscountPct > 0 && (
+            <span className="text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-md bg-red-500 text-white shadow-md">
+              -{maxDiscountPct}% OFF
+            </span>
+          )}
+          {hasBulkOffer && (
+            <span className="text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-md bg-[#7DC57A] text-[#0F2318] shadow-md">
+              BULK OFFER
+            </span>
+          )}
+        </div>
       </div>
 
+      {/* ─── PRODUCT DETAILS ─── */}
       <div className="p-5 flex flex-col flex-grow">
         <h3 className="font-semibold text-base mb-1 text-gray-900 dark:text-white leading-snug transition-colors duration-300">{product.name}</h3>
-        <p className="text-xs leading-relaxed mb-5 flex-grow line-clamp-2 text-gray-500 dark:text-gray-400 font-light transition-colors duration-300">{product.description}</p>
+        
+        {/* Description mapped with dynamic offer text (Line clamp increased to 3) */}
+        <p className="text-xs leading-relaxed mb-5 flex-grow line-clamp-3 text-gray-500 dark:text-gray-400 font-light transition-colors duration-300">
+          {enhancedDescription}
+        </p>
+        
         <div className="flex items-center justify-between pt-4 mt-auto border-t border-gray-100 dark:border-white/5 transition-colors duration-300">
           <div>
-            <p className="text-[9px] font-bold tracking-widest uppercase mb-0.5 text-gray-400 dark:text-gray-500">from</p>
-            <span className="font-bold text-lg text-[#2D6A27] dark:text-[#7DC57A] transition-colors duration-300">{price}</span>
+            <p className="text-[9px] font-bold tracking-widest uppercase mb-0.5 text-gray-400 dark:text-gray-500">
+              {product.variants?.length > 1 ? "from" : "price"}
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-lg text-[#2D6A27] dark:text-[#7DC57A] transition-colors duration-300">{priceFormatted}</span>
+              {/* Show original slashed price if discounted */}
+              {firstVariantHasDiscount && (
+                <span className="text-xs text-gray-400 dark:text-gray-500 line-through decoration-gray-400 dark:decoration-gray-500">{originalPriceFormatted}</span>
+              )}
+            </div>
           </div>
           <Link to={`/products/${product.id}`} className="text-xs font-bold px-5 py-2.5 rounded-full transition-all bg-[#0F2318] dark:bg-[#7DC57A] text-white dark:text-[#0F2318] hover:bg-brand-brown dark:hover:bg-white">
             View →

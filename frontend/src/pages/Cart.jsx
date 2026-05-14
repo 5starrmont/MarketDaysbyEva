@@ -24,7 +24,57 @@ const buttonHover = { scale: 1.05, transition: { type: "spring", stiffness: 400,
 const buttonTap = { scale: 0.95 };
 
 export default function Cart() {
-  const { cartItems, removeFromCart, cartTotal } = useCart();
+  // NOTE: Ensure your CartContext provides an 'updateQuantity' function to handle the +/- buttons!
+  const { cartItems, removeFromCart, updateQuantity } = useCart();
+
+  // ══════════════════════════════════════════
+  // DYNAMIC CART ENGINE (Calculates Offers on the fly)
+  // ══════════════════════════════════════════
+  const evaluatedCart = cartItems.map(item => {
+    const originalPrice = parseFloat(item.variant.price) || 0;
+    let unitPrice = originalPrice;
+    
+    const discPrice = parseFloat(item.variant.discount_price) || 0;
+    const bulkPriceVal = parseFloat(item.variant.bulk_price) || 0;
+    const bulkThreshold = parseFloat(item.variant.bulk_threshold) || 0;
+    const qty = parseFloat(item.quantity) || 0;
+
+    let appliedOffer = null;
+    let hasValidDiscount = discPrice > 0 && discPrice < originalPrice;
+    let hasValidBulk = bulkPriceVal > 0 && bulkThreshold > 0 && bulkPriceVal < originalPrice;
+
+    // 1. Apply standard discount
+    if (hasValidDiscount) {
+      unitPrice = discPrice;
+      appliedOffer = 'discount';
+    }
+
+    // 2. Override with bulk price if threshold is reached (and is cheaper than discount)
+    if (hasValidBulk && qty >= bulkThreshold) {
+      if (!hasValidDiscount || bulkPriceVal < discPrice) {
+        unitPrice = bulkPriceVal;
+        appliedOffer = 'bulk';
+      }
+    }
+
+    const itemTotal = unitPrice * qty;
+
+    return {
+      ...item,
+      originalPrice,
+      unitPrice,
+      itemTotal,
+      appliedOffer,
+      hasValidBulk,
+      bulkThreshold,
+      bulkPriceVal,
+      discPrice
+    };
+  });
+
+  // Mathematically derive the final cart total ensuring all bulk/discount rules are respected
+  const dynamicCartTotal = evaluatedCart.reduce((total, item) => total + item.itemTotal, 0);
+
 
   // ══════════════════════════════════════════
   // EMPTY STATE
@@ -92,7 +142,7 @@ export default function Cart() {
             className="lg:col-span-8 flex flex-col gap-6"
           >
             <AnimatePresence>
-              {cartItems.map((item) => (
+              {evaluatedCart.map((item) => (
                 <motion.div 
                   variants={itemRemove}
                   key={`${item.product.id}-${item.variant.id}`} 
@@ -100,7 +150,7 @@ export default function Cart() {
                 >
                   
                   {/* Product Details (Image + Info) */}
-                  <div className="flex items-center gap-6 w-full sm:w-auto">
+                  <div className="flex items-center gap-6 w-full sm:w-auto flex-grow">
                     <div className="w-24 h-24 md:w-28 md:h-28 bg-gray-50/50 dark:bg-white/[0.02] backdrop-blur-3xl flex items-center justify-center overflow-hidden flex-shrink-0 rounded-2xl border border-gray-100 dark:border-white/5 relative transition-colors duration-300">
                       {item.product.image ? (
                         <img src={item.product.image} alt={item.product.name} className="object-cover h-full w-full group-hover:scale-110 transition-transform duration-700" />
@@ -109,28 +159,81 @@ export default function Cart() {
                       )}
                     </div>
 
-                    <div className="flex flex-col">
+                    <div className="flex flex-col w-full">
                       <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1 leading-tight transition-colors duration-300" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
                         {item.product.name}
                       </h3>
                       <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold mb-3 transition-colors duration-300">
                         {item.variant.unit_size}
                       </p>
-                      <div className="flex items-center gap-3">
-                        <span className="font-bold text-[#0F2318] dark:text-[#F5EDD8] bg-gray-50 dark:bg-[#1A2E18] border border-gray-200 dark:border-white/10 px-3 py-1.5 rounded-lg text-sm shadow-sm transition-colors duration-300">
-                          Qty: {item.quantity}
-                        </span>
-                        <span className="text-sm font-medium text-gray-400 dark:text-gray-500 transition-colors duration-300">
-                          (KES {parseFloat(item.variant.price).toLocaleString()} each)
-                        </span>
+                      
+                      {/* Interactive Quantity & Price Controls */}
+                      <div className="flex flex-wrap items-center gap-4">
+                        
+                        {/* Interactive +/- Adjuster */}
+                        <div className="flex items-center bg-gray-50 dark:bg-[#1A2E18] border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden shadow-sm transition-colors duration-300">
+                          <button 
+                            onClick={() => updateQuantity && updateQuantity(item.product.id, item.variant.id, Math.max(0.5, item.quantity - 0.5))} 
+                            className="px-3 py-1 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white font-black transition-colors"
+                          >
+                            -
+                          </button>
+                          <span className="w-10 text-center text-sm font-bold text-[#0F2318] dark:text-[#F5EDD8]">{item.quantity}</span>
+                          <button 
+                            onClick={() => updateQuantity && updateQuantity(item.product.id, item.variant.id, item.quantity + 0.5)} 
+                            className="px-3 py-1 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white font-black transition-colors"
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        {/* Unit Price (Shows discount slashes if applicable) */}
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-black text-gray-900 dark:text-white transition-colors duration-300">
+                            KES {item.unitPrice.toLocaleString()} <span className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">/ea</span>
+                          </span>
+                          {item.appliedOffer && (
+                            <span className="text-xs text-gray-400 dark:text-gray-500 line-through decoration-gray-400 dark:decoration-gray-500 transition-colors duration-300">
+                              KES {item.originalPrice.toLocaleString()}
+                            </span>
+                          )}
+                        </div>
+
                       </div>
+
+                      {/* Dynamic Cart Nudges */}
+                      <div className="h-5 mt-1.5 flex items-center">
+                        <AnimatePresence mode="wait">
+                          {item.appliedOffer === 'bulk' && (
+                            <motion.span key="bulk" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-[10px] font-bold uppercase tracking-wider text-[#2D6A27] dark:text-[#7DC57A]">
+                              ✨ Bulk pricing applied!
+                            </motion.span>
+                          )}
+                          {item.appliedOffer === 'discount' && item.hasValidBulk && item.quantity < item.bulkThreshold && item.bulkPriceVal < item.discPrice && (
+                            <motion.span key="disc-nudge" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-[10px] font-bold uppercase tracking-wider text-[#C4892A]">
+                              💡 Add {item.bulkThreshold - item.quantity} more for bulk price (KES {item.bulkPriceVal.toLocaleString()})!
+                            </motion.span>
+                          )}
+                          {item.appliedOffer === 'discount' && (!item.hasValidBulk || item.quantity >= item.bulkThreshold || item.bulkPriceVal >= item.discPrice) && (
+                            <motion.span key="disc-only" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-[10px] font-bold uppercase tracking-wider text-[#C4892A]">
+                              🎉 Discount applied!
+                            </motion.span>
+                          )}
+                          {!item.appliedOffer && item.hasValidBulk && item.quantity < item.bulkThreshold && (
+                            <motion.span key="nudge" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-[10px] font-bold uppercase tracking-wider text-[#C4892A]">
+                              💡 Add {item.bulkThreshold - item.quantity} more for bulk price (KES {item.bulkPriceVal.toLocaleString()})!
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
+                      </div>
+
                     </div>
                   </div>
 
                   {/* Price & Remove Action */}
                   <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto border-t sm:border-none border-gray-100 dark:border-white/5 pt-4 sm:pt-0 transition-colors duration-300">
                     <p className="text-2xl font-black text-[#2D6A27] dark:text-[#7DC57A] sm:mb-4 transition-colors duration-300">
-                      KES {(item.variant.price * item.quantity).toLocaleString()}
+                      KES {item.itemTotal.toLocaleString()}
                     </p>
                     <button 
                       onClick={() => removeFromCart(item.product.id, item.variant.id)}
@@ -160,7 +263,7 @@ export default function Cart() {
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between items-center text-[#F5EDD8]/70">
                   <span className="font-light">Subtotal</span>
-                  <span className="font-medium">KES {cartTotal.toLocaleString()}</span>
+                  <span className="font-medium">KES {dynamicCartTotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-center text-[#F5EDD8]/70 pb-6 border-b border-white/10">
                   <span className="font-light">Delivery Fee</span>
@@ -171,7 +274,7 @@ export default function Cart() {
                   <span className="text-lg font-bold">Estimated Total</span>
                   <span className="text-4xl font-black text-[#7DC57A]">
                     <span className="text-lg text-[#7DC57A]/70 mr-1">KES</span>
-                    {cartTotal.toLocaleString()}
+                    {dynamicCartTotal.toLocaleString()}
                   </span>
                 </div>
               </div>
