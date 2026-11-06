@@ -5,7 +5,7 @@ from inventory.models import ProductVariant
 class Address(models.Model):
     user = models.ForeignKey(User, related_name='addresses', on_delete=models.CASCADE)
     
-    # CHANGED: Removed choices. Now users can type custom labels like "Mom's House"
+    # Removed choices. Now users can type custom labels like "Mom's House"
     address_type = models.CharField(max_length=100, default='My Address')
     
     location_name = models.CharField(max_length=255) 
@@ -43,8 +43,10 @@ class Order(models.Model):
     STATUS_CHOICES = (
         ('Pending', 'Pending'),
         ('Paid', 'Paid'),
+        ('Processing', 'Processing'),        # <--- ADDED FAST-TRACK STATUS
         ('Ready for Packing', 'Ready for Packing'),
         ('Out for Delivery', 'Out for Delivery'),
+        ('Delivered', 'Delivered'),          # <--- ADDED FRONTEND SUCCESS STATUS
         ('Completed', 'Completed'),
         ('Cancelled', 'Cancelled'),
     )
@@ -81,8 +83,41 @@ class OrderItem(models.Model):
     
     price_at_order = models.DecimalField(max_digits=10, decimal_places=2) 
     
-    # NEW FIELD: To track if a discount or bulk offer was used at the time of purchase
+    # To track if a discount or bulk offer was used at the time of purchase
     applied_offer = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
         return f"{self.quantity}x {self.variant} (Order #{self.order.id})"
+
+
+class Payment(models.Model):
+    STATUS_CHOICES = (
+        ('Pending', 'Pending'),
+        ('Completed', 'Completed'),
+        ('Failed', 'Failed'),
+        ('Cancelled', 'Cancelled'),
+    )
+    
+    METHOD_CHOICES = (
+        ('M-Pesa', 'M-Pesa'),
+        ('Airtel Money', 'Airtel Money'),
+        ('Card', 'Credit/Debit Card'),
+        ('Crypto', 'Cryptocurrency'),
+    )
+    
+    order = models.OneToOneField(Order, related_name='payment', on_delete=models.CASCADE)
+    payment_method = models.CharField(max_length=20, choices=METHOD_CHOICES, default='M-Pesa')
+    
+    # Generic reference fields that can handle M-Pesa codes, Stripe IDs, or Crypto Hashes
+    transaction_reference = models.CharField(max_length=100, blank=True, null=True, unique=True) 
+    gateway_request_id = models.CharField(max_length=100, blank=True, null=True)
+    
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    phone_number = models.CharField(max_length=20, blank=True, null=True) # Useful for mobile money
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    payment_date = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Payment for Order #{self.order.id} via {self.payment_method} - {self.status}"

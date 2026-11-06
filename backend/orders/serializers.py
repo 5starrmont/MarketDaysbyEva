@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import Address, DeliveryConfiguration, Order, OrderItem
+from django.contrib.auth.models import User
+from djoser.serializers import UserSerializer as BaseUserSerializer
+from .models import Address, DeliveryConfiguration, Order, OrderItem, Payment
 
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,6 +17,12 @@ class DeliveryConfigurationSerializer(serializers.ModelSerializer):
             'tier_3_fee', 'tier_4_fee'
         ]
 
+# ─── NEW: PAYMENT SERIALIZER ───
+class PaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = '__all__'
+
 # This helps DRF understand the incoming items array from React when placing an order
 class OrderItemCreateSerializer(serializers.Serializer):
     variant_id = serializers.IntegerField()
@@ -26,13 +34,26 @@ class OrderItemCreateSerializer(serializers.Serializer):
 class OrderSerializer(serializers.ModelSerializer):
     # This remains write_only so it handles the incoming checkout payload properly
     items = OrderItemCreateSerializer(many=True, write_only=True)
+    
+    # Expose the linked payment record when fetching orders
+    payment = PaymentSerializer(read_only=True)
+
+    # ─── ADDED: M-PESA RECEIPT CODE ───
+    transaction_reference = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
         fields = [
             'id', 'customer_name', 'customer_phone', 'delivery_address', 
-            'total_amount', 'items', 'status', 'created_at'
+            'total_amount', 'delivery_fee', 'items', 'status', 'payment', 
+            'created_at', 'transaction_reference' # Added to fields
         ]
+
+    # Fetches the receipt code from the attached payment ledger
+    def get_transaction_reference(self, obj):
+        if hasattr(obj, 'payment') and obj.payment and obj.payment.status == 'Completed':
+            return obj.payment.transaction_reference
+        return None
 
     def create(self, validated_data):
         # 1. Pop the items array out of the main data
@@ -53,7 +74,7 @@ class OrderSerializer(serializers.ModelSerializer):
             
         return order
 
-    # NEW: This intercepts the outgoing data and injects the formatted items 
+    # Intercept the outgoing data and inject the formatted items 
     # so React can display them in the Profile dashboard
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -64,9 +85,16 @@ class OrderSerializer(serializers.ModelSerializer):
                 'product_name': str(item.variant) if item.variant else "Unknown Item",
                 'quantity': item.quantity,
                 'price': item.price_at_order,
-                'applied_offer': item.applied_offer # Send it back to React for the receipt badge
+                'applied_offer': item.applied_offer 
             }
             for item in instance.items.all()
         ]
         
         return representation
+
+# ─── CUSTOM USER SERIALIZER FOR DJOSER ───
+class CustomUserSerializer(BaseUserSerializer):
+    class Meta(BaseUserSerializer.Meta):
+        model = User
+        # Tell Djoser to include the staff and superuser flags
+        fields = ('id', 'username', 'email', 'is_staff', 'is_superuser')

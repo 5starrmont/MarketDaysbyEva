@@ -36,9 +36,9 @@ const ThemeToggle = () => {
 };
 
 const navItems = [
-  { label: 'Overview', path: '/manager/dashboard', icon: '📊' },
-  { label: 'Orders', path: '/manager/orders', icon: '🛒' },
-  { label: 'Inventory', path: '/manager/inventory', icon: '🥬' },
+  { label: 'Overview', path: '/manager/dashboard', icon: '' },
+  { label: 'Orders', path: '/manager/orders', icon: '' },
+  { label: 'Inventory', path: '/manager/inventory', icon: '' },
 ];
 
 export default function ManagerHeader() {

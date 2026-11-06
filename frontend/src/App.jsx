@@ -16,7 +16,8 @@ import { useAuth } from './context/AuthContext';
 import ManagerHeader from './components/ManagerHeader'; 
 import DashboardHome from './pages/manager/DashboardHome'; 
 import ManageInventory from './pages/manager/ManageInventory';
-import ManageOrders from './pages/manager/ManageOrders'; // <-- NEW IMPORT
+import ManageOrders from './pages/manager/ManageOrders';
+import ManagerLogin from './pages/manager/ManagerLogin'; // <-- NEW IMPORT
 
 // --- Theme Context ---
 import { ThemeProvider, useTheme } from './context/ThemeContext'; 
@@ -62,19 +63,16 @@ const ThemeToggle = () => {
       aria-label="Toggle Dark Mode"
     >
       <motion.div 
-        // Explicitly animate the X axis instead of relying on flex alignment
         animate={{ x: theme === 'dark' ? 26 : 0 }} 
         initial={false}
         transition={{ type: "spring", stiffness: 500, damping: 30 }}
         className="absolute w-5 h-5 bg-[#C4892A] rounded-full flex items-center justify-center shadow-lg"
       >
         {theme === 'dark' ? (
-          // Moon Icon
           <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-[#0F2318]">
             <path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
           </svg>
         ) : (
-          // Sun Icon
           <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5 text-white">
             <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59M21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.757 17.834a.75.75 0 00-1.06 1.06l1.591 1.591a.75.75 0 001.06-1.06l-1.59-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
           </svg>
@@ -91,9 +89,11 @@ function AppContent() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Safely check if we are on the manager side
   const location = useLocation();
-  const isManagerRoute = location.pathname.startsWith('/manager');
+  
+  // ─── ROUTING LOGIC ───
+  const isManagerLoginRoute = location.pathname === '/manager/login';
+  const isManagerRoute = location.pathname.startsWith('/manager') && !isManagerLoginRoute;
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -113,7 +113,14 @@ function AppContent() {
     <>
       <ScrollManager />
       
-      {isManagerRoute ? (
+      {isManagerLoginRoute ? (
+        /* ══════════════════════════════════════════
+            MANAGER LOGIN PORTAL (FULLSCREEN)
+        ══════════════════════════════════════════ */
+        <Routes>
+          <Route path="/manager/login" element={<ManagerLogin />} />
+        </Routes>
+      ) : isManagerRoute ? (
         /* ══════════════════════════════════════════
             MANAGER DASHBOARD LAYOUT
         ══════════════════════════════════════════ */
@@ -123,7 +130,6 @@ function AppContent() {
             <Routes>
               <Route path="/manager/dashboard" element={<DashboardHome />} />
               <Route path="/manager/inventory" element={<ManageInventory />} />
-              {/* ─── NEW ROUTE: DISPATCH HUB ─── */}
               <Route path="/manager/orders" element={<ManageOrders />} /> 
             </Routes>
           </div>
@@ -134,14 +140,10 @@ function AppContent() {
         ══════════════════════════════════════════ */
         <div className="min-h-screen bg-[#F9F7F3] dark:bg-[#060D0A] text-gray-900 dark:text-[#F5EDD8] font-sans flex flex-col relative transition-colors duration-300">
           
-          {/* ══════════════════════════════════════════
-              PREMIUM INTERACTIVE NAVBAR
-          ══════════════════════════════════════════ */}
           <motion.header 
             initial={{ y: -100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ type: "spring", stiffness: 100, damping: 20 }}
-            // FULL WIDTH GLASS BACKGROUND BEHIND THE PILL
             className={`fixed top-0 w-full z-50 transition-all duration-500 flex justify-center ${
               isScrolled && !mobileMenuOpen
               ? 'pt-4 pb-4 px-4 bg-[#F9F7F3]/85 dark:bg-[#060D0A]/85 backdrop-blur-xl border-b border-gray-200/50 dark:border-white/5' 
@@ -156,7 +158,6 @@ function AppContent() {
             >
               <div className={`mx-auto flex justify-between items-center ${isScrolled ? 'max-w-none' : 'max-w-7xl'}`}>
                 
-                {/* Brand Logo & Name */}
                 <Link to="/" className="flex items-center gap-3 group relative z-50" onClick={() => setMobileMenuOpen(false)}>
                   <img src={brandLogo} alt="Market Days Logo" className="h-10 w-10 md:h-12 md:w-12 rounded-lg object-cover shadow-sm transition-transform group-hover:scale-105" />
                   <div className="hidden sm:flex items-baseline gap-1.5">
@@ -169,19 +170,16 @@ function AppContent() {
                   </div>
                 </Link>
 
-                {/* Desktop Navigation */}
                 <div className="hidden lg:flex gap-6 xl:gap-8 font-medium items-center text-sm tracking-wide">
                   <Link to="/" className="text-[#F5EDD8]/80 hover:text-[#C4892A] transition-colors">Home</Link>
                   <Link to="/products" className="text-[#F5EDD8]/80 hover:text-[#C4892A] transition-colors">Shop</Link>
                   <Link to="/#download" className="text-[#F5EDD8]/80 hover:text-[#C4892A] transition-colors">Download</Link>
                   <Link to="/#contact" className="text-[#F5EDD8]/80 hover:text-[#C4892A] transition-colors">Contact Us</Link>
                   
-                  {/* ─── THEME TOGGLE (DESKTOP) ─── */}
                   <div className="ml-2">
                     <ThemeToggle />
                   </div>
 
-                  {/* Premium Cart Icon/Badge */}
                   <Link to="/cart" className="relative text-[#F5EDD8]/80 hover:text-[#C4892A] transition-colors flex items-center gap-2 group">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
@@ -199,7 +197,6 @@ function AppContent() {
 
                   <div className="w-px h-4 bg-white/20 mx-1 lg:mx-2"></div>
 
-                  {/* Auth Section */}
                   {user ? (
                     <div className="flex items-center gap-4 lg:gap-5">
                       <Link to="/profile" className="text-sm font-bold text-[#F5EDD8] bg-white/5 border border-white/10 px-4 py-2 rounded-full hover:bg-white/10 transition-all flex items-center gap-2">
@@ -219,7 +216,6 @@ function AppContent() {
                   )}
                 </div>
 
-                {/* Mobile Menu Hamburger Toggle */}
                 <button 
                   className="lg:hidden text-[#F5EDD8] p-2 relative z-50 focus:outline-none" 
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -235,7 +231,6 @@ function AppContent() {
               </div>
             </nav>
 
-            {/* Mobile Fullscreen Menu overlay */}
             <AnimatePresence>
               {mobileMenuOpen && (
                 <motion.div 
@@ -259,7 +254,6 @@ function AppContent() {
                     <div className="w-full h-px bg-white/10 my-4"></div>
                     
                     <div className="font-sans text-lg tracking-wide flex flex-col gap-6">
-                      {/* ─── THEME TOGGLE (MOBILE) ─── */}
                       <div className="flex items-center justify-between">
                         <span className="font-bold">Appearance</span>
                         <ThemeToggle />
@@ -285,9 +279,6 @@ function AppContent() {
             </AnimatePresence>
           </motion.header>
 
-          {/* ══════════════════════════════════════════
-              MAIN CONTENT AREA
-          ══════════════════════════════════════════ */}
           <main className="w-full flex-grow pt-24 md:pt-32">
             <Routes>
               <Route path="/" element={<Home />} />
@@ -306,7 +297,6 @@ function AppContent() {
   );
 }
 
-// Ensure the app is wrapped in the Router and ThemeProvider at the very top level
 export default function App() {
   return (
     <ThemeProvider>

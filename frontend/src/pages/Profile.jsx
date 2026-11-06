@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
@@ -50,6 +50,7 @@ export default function Profile() {
   const { user, logout } = useAuth();
   const { clearCart } = useCart();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [orders, setOrders] = useState([]);
   const [addresses, setAddresses] = useState([]);
@@ -59,6 +60,11 @@ export default function Profile() {
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [isSavingAddress, setIsSavingAddress] = useState(false);
   
+  // ─── Payment Polling States ───
+  const [isPolling, setIsPolling] = useState(searchParams.get('payment_pending') === 'true');
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentError, setPaymentError] = useState(false);
+
   const [newAddress, setNewAddress] = useState({
     address_type: '', 
     location_name: 'Select a location on the map',
@@ -69,6 +75,53 @@ export default function Profile() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+
+  // ─── Background Poller for M-Pesa ───
+  useEffect(() => {
+    let intervalId;
+    let attempts = 0;
+
+    if (isPolling) {
+      intervalId = setInterval(async () => {
+        try {
+          attempts++;
+          const token = localStorage.getItem('access');
+          const config = { headers: { Authorization: `JWT ${token}` } };
+          const res = await axios.get('http://127.0.0.1:8000/api/orders/orders/', config);
+          const latestOrders = res.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+          
+          if (latestOrders.length > 0) {
+            const currentStatus = latestOrders[0].status;
+            
+            // Check for Success
+            if (['Paid', 'Processing', 'Ready for Packing'].includes(currentStatus)) {
+              setIsPolling(false);
+              setPaymentSuccess(true);
+              setOrders(latestOrders); 
+              navigate('/profile', { replace: true }); 
+            } 
+            // Check for Failure
+            else if (currentStatus === 'Payment Failed') {
+              setIsPolling(false);
+              setPaymentError(true);
+              setOrders(latestOrders);
+              navigate('/profile', { replace: true });
+            }
+          }
+
+          // Timeout after 60 seconds (20 attempts * 3s)
+          if (attempts >= 20) {
+            setIsPolling(false);
+            setPaymentError(true);
+          }
+        } catch (error) {
+          console.error("Error polling for payment status:", error);
+        }
+      }, 3000); 
+    }
+
+    return () => clearInterval(intervalId);
+  }, [isPolling, navigate]);
 
   useEffect(() => {
     if (user) {
@@ -104,6 +157,30 @@ export default function Profile() {
       await axios.patch(`http://127.0.0.1:8000/api/orders/orders/${orderId}/`, { status: 'Cancelled' }, { headers: { Authorization: `JWT ${token}` } });
       setOrders(orders.map(o => o.id === orderId ? { ...o, status: 'Cancelled' } : o));
     } catch (error) { alert("Could not cancel order."); }
+  };
+
+  const handleConfirmOrder = async (e, orderId) => {
+    e.stopPropagation();
+    if (!window.confirm("Fast-track this order for packaging? You will no longer be able to cancel it.")) return;
+    try {
+      const token = localStorage.getItem('access');
+      await axios.patch(`http://127.0.0.1:8000/api/orders/orders/${orderId}/`, { status: 'Ready for Packing' }, { headers: { Authorization: `JWT ${token}` } });
+      setOrders(orders.map(o => o.id === orderId ? { ...o, status: 'Ready for Packing' } : o));
+    } catch (error) { alert("Could not confirm order."); }
+  };
+
+  // ─── NEW: RETRY PAYMENT LOGIC ───
+  const handleRetryPayment = async (e, orderId) => {
+    e.stopPropagation();
+    try {
+      const token = localStorage.getItem('access');
+      const res = await axios.post(`http://127.0.0.1:8000/api/orders/orders/${orderId}/process_payment/`, {}, { headers: { Authorization: `JWT ${token}` } });
+      if (res.data.status === 'success') {
+        setIsPolling(true);
+      }
+    } catch (err) {
+      alert(err.response?.data?.error || "Could not initialize payment. Please try again.");
+    }
   };
 
   const handleSearch = async (e) => {
@@ -243,7 +320,7 @@ export default function Profile() {
                 </div>
                 <div className="bg-white/40 dark:bg-white/5 p-4 rounded-2xl transition-colors duration-300">
                   <p className="text-2xl font-black text-[#0F2318] dark:text-white transition-colors duration-300">{orders.filter(o => o.status === 'Delivered').length}</p>
-                  <p className="text-[9px] font-bold text-[#5C4A2A] dark:text-gray-400 uppercase tracking-widest transition-colors duration-300">Successful</p>
+                  <p className="text-[9px] font-bold text-[#5C4A2A] dark:text-gray-400 uppercase tracking-widest transition-colors duration-300">Delivered</p>
                 </div>
               </div>
             </motion.div>
@@ -268,18 +345,34 @@ export default function Profile() {
                 </div>
               ) : (
                 orders.map((order) => {
-                  const isPending = !order.status || order.status.toLowerCase() === 'pending';
-                  const canCancel = isPending && isWithinTenMinutes(order.created_at);
+                  
+                  // Backend Logic checks
+                  const rawStatus = order.status || 'Pending';
+                  const timeSinceCreation = (new Date().getTime() - new Date(order.created_at).getTime()) / 60000;
+                  const within10Mins = timeSinceCreation <= 10;
+                  
+                  const canCancel = ['Pending', 'Paid', 'Payment Failed'].includes(rawStatus) && within10Mins;
+                  const canConfirm = rawStatus === 'Paid' && within10Mins;
+                  const canRetryPayment = ['Pending', 'Payment Failed'].includes(rawStatus);
+                  
                   const isExpanded = expandedOrderId === order.id;
 
-                  // ─── MATH FIX: SAFELY CALCULATE SUBTOTAL FROM ITEMS ───
+                  // ─── UX MASKING: Simplify the backend status for the customer ───
+                  let displayStatus = rawStatus;
+                  if (['Paid', 'Ready for Packing', 'Processing'].includes(rawStatus)) {
+                      displayStatus = 'Processing';
+                  }
+
+                  let badgeColorClass = 'bg-yellow-50 dark:bg-yellow-500/20 text-yellow-600 dark:text-yellow-400';
+                  if (displayStatus === 'Processing') badgeColorClass = 'bg-blue-50 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400';
+                  if (displayStatus === 'Out for Delivery') badgeColorClass = 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400';
+                  if (displayStatus === 'Delivered' || displayStatus === 'Completed') badgeColorClass = 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400';
+                  if (displayStatus === 'Cancelled' || displayStatus === 'Payment Failed') badgeColorClass = 'bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-400';
+
                   const orderTotal = parseFloat(order.total_amount) || 0;
-                  
                   const orderSubtotal = order.items?.reduce((sum, item) => {
                     return sum + ((parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 0));
                   }, 0) || 0;
-
-                  // Derive the delivery fee to gracefully handle old orders where it was missing
                   const orderDeliveryFee = Math.max(0, orderTotal - orderSubtotal);
 
                   return (
@@ -288,8 +381,8 @@ export default function Profile() {
                         {isExpanded && <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#7DC57A]"></div>}
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-3">
-                            <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest transition-colors duration-300 ${order.status === 'Delivered' ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400' : order.status === 'Cancelled' ? 'bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-400' : 'bg-yellow-50 dark:bg-yellow-500/20 text-yellow-600 dark:text-yellow-400'}`}>
-                              {order.status || 'Processing'}
+                            <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest transition-colors duration-300 ${badgeColorClass}`}>
+                              {displayStatus}
                             </span>
                             <p className="text-[10px] font-black text-gray-300 dark:text-gray-600 uppercase tracking-[0.2em] transition-colors duration-300">Order #{order.id}</p>
                           </div>
@@ -312,7 +405,6 @@ export default function Profile() {
                             <div className="p-8">
                               <h4 className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-6 transition-colors duration-300">Detailed Receipt</h4>
                               
-                              {/* Itemized Breakdown with Prominent Offer Badges */}
                               <div className="space-y-3 mb-8">
                                 {order.items?.length > 0 ? order.items.map((item, i) => {
                                   const itemPrice = parseFloat(item.price) || 0;
@@ -333,15 +425,14 @@ export default function Profile() {
                                               {item.product_name || `Market Item`}
                                             </p>
                                             
-                                            {/* HIGHLY VISIBLE OFFER BADGES */}
                                             {offerType === 'bulk' && (
                                               <span className="text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded-md bg-[#EBF5EA] text-[#2D6A27] dark:bg-[#1A4D2E]/30 dark:text-[#7DC57A] border border-[#2D6A27]/20">
-                                                Bulk Offer Applied
+                                                Bulk Offer
                                               </span>
                                             )}
                                             {offerType === 'discount' && (
                                               <span className="text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded-md bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400 border border-red-200">
-                                                Discount Applied
+                                                Discounted
                                               </span>
                                             )}
                                           </div>
@@ -359,7 +450,6 @@ export default function Profile() {
                                 }) : <p className="text-sm text-gray-400 dark:text-gray-500 italic transition-colors duration-300">Order details unavailable.</p>}
                               </div>
 
-                              {/* Math Breakdown (Subtotal, Fee, Total) */}
                               <div className="mt-6 pt-6 border-t border-gray-200 dark:border-white/10 flex justify-end">
                                 <div className="w-full sm:w-1/2 space-y-3">
                                   <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
@@ -374,19 +464,49 @@ export default function Profile() {
                                     <span>Total</span>
                                     <span className="text-[#2D6A27] dark:text-[#7DC57A]">KES {orderTotal.toLocaleString()}</span>
                                   </div>
+                                  
+                                  {order.transaction_reference && (
+                                    <div className="flex justify-between text-xs font-bold text-gray-500 dark:text-gray-400 pt-3 border-t border-gray-100 dark:border-white/5">
+                                      <span>M-Pesa Ref:</span>
+                                      <span className="text-[#0F2318] dark:text-[#7DC57A] uppercase">{order.transaction_reference}</span>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                               
-                              {/* Footer / Cancel Logic */}
                               <div className="flex flex-col sm:flex-row justify-between items-center gap-6 pt-8 mt-8 border-t border-gray-200 dark:border-white/10 transition-colors duration-300">
                                 <div className="text-[11px] text-gray-400 dark:text-gray-500 max-w-xs text-center sm:text-left leading-relaxed transition-colors duration-300">
-                                  {isPending ? (canCancel ? "Eva is currently picking your items. You have a limited window to cancel this order." : "Your items are already being packed. Cancellation is no longer available.") : "This order has already been finalized."}
+                                  {displayStatus === 'Payment Failed' 
+                                    ? "Payment could not be processed. Please verify your funds and try again." 
+                                    : canCancel 
+                                      ? "Eva is currently picking your items. You have a 10-minute window to cancel, or you can fast-track packaging now." 
+                                      : "Your items are already packed/shipped. Cancellation is no longer available."}
                                 </div>
-                                {canCancel && (
-                                  <motion.button whileHover={buttonHover} whileTap={buttonTap} onClick={(e) => handleCancelOrder(e, order.id)} className="bg-red-500 dark:bg-red-600 text-white px-10 py-4 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-red-500/20 dark:shadow-none transition-colors duration-300">
-                                    Cancel Order
-                                  </motion.button>
-                                )}
+                                
+                                <div className="flex flex-wrap gap-4 justify-center sm:justify-end">
+                                  {canCancel && (
+                                    <motion.button whileHover={buttonHover} whileTap={buttonTap} onClick={(e) => handleCancelOrder(e, order.id)} className="bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-colors duration-300 hover:bg-red-500 hover:text-white dark:hover:bg-red-600 dark:hover:text-white">
+                                      Cancel
+                                    </motion.button>
+                                  )}
+                                  
+                                  {canConfirm && (
+                                    <motion.button whileHover={buttonHover} whileTap={buttonTap} onClick={(e) => handleConfirmOrder(e, order.id)} className="bg-[#0F2318] dark:bg-white text-[#F5EDD8] dark:text-[#0F2318] px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl transition-colors duration-300">
+                                      Confirm & Pack
+                                    </motion.button>
+                                  )}
+
+                                  {/* NEW: PAY NOW / RETRY BUTTON */}
+                                  {canRetryPayment && (
+                                    <motion.button 
+                                      whileHover={buttonHover} whileTap={buttonTap} 
+                                      onClick={(e) => handleRetryPayment(e, order.id)} 
+                                      className="bg-[#2D6A27] dark:bg-[#7DC57A] text-white dark:text-[#0F2318] px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl transition-colors duration-300 hover:opacity-90"
+                                    >
+                                      Pay Now
+                                    </motion.button>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </motion.div>
@@ -470,6 +590,64 @@ export default function Profile() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* ─── Polling Wait Modal (M-Pesa STK Push) ─── */}
+      <AnimatePresence>
+        {isPolling && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-[#0F2318]/80 dark:bg-black/90 backdrop-blur-md transition-colors duration-300" />
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="bg-white dark:bg-[#0A1810] p-12 rounded-[3rem] shadow-2xl text-center max-w-sm relative z-10 border dark:border-white/5 transition-colors duration-300">
+              <div className="w-20 h-20 mx-auto bg-[#EBF5EA] dark:bg-[#1A4D2E]/30 rounded-full flex items-center justify-center mb-6">
+                <div className="w-10 h-10 border-4 border-[#2D6A27] dark:border-[#7DC57A] border-t-transparent rounded-full animate-spin"></div>
+              </div>
+              <h3 className="text-2xl font-black text-[#0F2318] dark:text-white mb-2 transition-colors duration-300">Awaiting Payment</h3>
+              <p className="text-gray-500 dark:text-gray-400 font-light mb-8 transition-colors duration-300">Please check your phone and enter your M-Pesa PIN to complete the transaction.</p>
+              <button onClick={() => { setIsPolling(false); navigate('/profile', { replace: true }); }} className="text-xs font-bold text-gray-400 hover:text-[#0F2318] dark:hover:text-white uppercase tracking-widest transition-colors duration-300">
+                Cancel / Go Back
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── Payment Success Modal ─── */}
+      <AnimatePresence>
+        {paymentSuccess && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-[#0F2318]/80 dark:bg-black/90 backdrop-blur-md transition-colors duration-300" />
+            <motion.div initial={{ opacity: 0, scale: 0.9, y: 50 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="bg-white dark:bg-[#0A1810] p-12 rounded-[3rem] shadow-2xl text-center max-w-md relative z-10 border dark:border-white/5 transition-colors duration-300">
+              <div className="w-24 h-24 mx-auto bg-green-100 dark:bg-[#1A4D2E]/40 text-green-600 dark:text-[#7DC57A] rounded-full flex items-center justify-center mb-8 shadow-inner">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} className="w-12 h-12"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+              </div>
+              <h3 className="text-4xl font-black text-[#0F2318] dark:text-white mb-4 transition-colors duration-300" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Payment Received!</h3>
+              <p className="text-gray-500 dark:text-gray-400 font-light mb-10 transition-colors duration-300 text-lg">Your M-Pesa transaction was successful. Eva is now packing your order.</p>
+              <motion.button whileHover={buttonHover} whileTap={buttonTap} onClick={() => setPaymentSuccess(false)} className="w-full bg-[#0F2318] dark:bg-[#7DC57A] text-[#F5EDD8] dark:text-[#0F2318] py-5 rounded-full font-black uppercase tracking-widest text-sm shadow-xl shadow-[#0F2318]/20 dark:shadow-none transition-colors duration-300">
+                View Receipt
+              </motion.button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── NEW: Payment Failed Modal ─── */}
+      <AnimatePresence>
+        {paymentError && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-[#0F2318]/80 dark:bg-black/90 backdrop-blur-md transition-colors duration-300" />
+            <motion.div initial={{ opacity: 0, scale: 0.9, y: 50 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="bg-white dark:bg-[#0A1810] p-12 rounded-[3rem] shadow-2xl text-center max-w-md relative z-10 border dark:border-white/5 transition-colors duration-300">
+              <div className="w-24 h-24 mx-auto bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mb-8 shadow-inner">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} className="w-12 h-12"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              </div>
+              <h3 className="text-4xl font-black text-[#0F2318] dark:text-white mb-4 transition-colors duration-300" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Payment Failed</h3>
+              <p className="text-gray-500 dark:text-gray-400 font-light mb-10 transition-colors duration-300 text-lg">Your transaction could not be completed. You may have insufficient funds or cancelled the prompt.</p>
+              <motion.button whileHover={buttonHover} whileTap={buttonTap} onClick={() => setPaymentError(false)} className="w-full bg-[#0F2318] dark:bg-[#7DC57A] text-[#F5EDD8] dark:text-[#0F2318] py-5 rounded-full font-black uppercase tracking-widest text-sm shadow-xl shadow-[#0F2318]/20 dark:shadow-none transition-colors duration-300">
+                Close & Retry
+              </motion.button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

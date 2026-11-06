@@ -11,6 +11,10 @@ import L from 'leaflet';
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
 
+// ─── LOCAL ASSET IMPORTS ───
+import airtelLogo from '../assets/images/airtel-money-tanzania-logo-png_seeklogo-527192.png';
+import visaMastercardLogo from '../assets/images/visa-mastercard.png';
+
 // Setup Leaflet Icons
 const defaultIcon = L.icon({
   iconUrl, shadowUrl, iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34],
@@ -86,6 +90,9 @@ export default function Checkout() {
   const [isSearching, setIsSearching] = useState(false);
   const [routeCoordinates, setRouteCoordinates] = useState([]); 
 
+  // ─── NEW PAYMENT STATE ───
+  const [paymentMethod, setPaymentMethod] = useState('M-Pesa');
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -95,7 +102,7 @@ export default function Checkout() {
   const evaluatedCart = cartItems.map(item => {
     const originalPrice = parseFloat(item.variant.price) || 0;
     let unitPrice = originalPrice;
-    let appliedOffer = null; // <-- FIXED: Added this variable to track the offer
+    let appliedOffer = null; 
     
     const discPrice = parseFloat(item.variant.discount_price) || 0;
     const bulkPriceVal = parseFloat(item.variant.bulk_price) || 0;
@@ -105,34 +112,24 @@ export default function Checkout() {
     let hasValidDiscount = discPrice > 0 && discPrice < originalPrice;
     let hasValidBulk = bulkPriceVal > 0 && bulkThreshold > 0 && bulkPriceVal < originalPrice;
 
-    // 1. Apply standard discount
     if (hasValidDiscount) {
       unitPrice = discPrice;
-      appliedOffer = 'discount'; // <-- FIXED: Set offer type
+      appliedOffer = 'discount'; 
     }
 
-    // 2. Override with bulk price if threshold is reached (and is cheaper than discount)
     if (hasValidBulk && qty >= bulkThreshold) {
       if (!hasValidDiscount || bulkPriceVal < discPrice) {
         unitPrice = bulkPriceVal;
-        appliedOffer = 'bulk'; // <-- FIXED: Set offer type
+        appliedOffer = 'bulk'; 
       }
     }
 
     const itemTotal = unitPrice * qty;
 
-    return {
-      ...item,
-      originalPrice,
-      unitPrice,
-      itemTotal,
-      appliedOffer // <-- FIXED: Return the applied offer
-    };
+    return { ...item, originalPrice, unitPrice, itemTotal, appliedOffer };
   });
 
-  // Mathematically derive the final cart subtotal ensuring all bulk/discount rules are respected
   const dynamicCartSubtotal = evaluatedCart.reduce((total, item) => total + item.itemTotal, 0);
-
 
   // 1. Fetch Delivery Configs
   useEffect(() => {
@@ -148,9 +145,7 @@ export default function Checkout() {
       axios.get('http://127.0.0.1:8000/api/orders/addresses/', { headers: { Authorization: `JWT ${token}` } })
         .then(res => {
           setSavedAddresses(res.data);
-          if (res.data.length > 0) {
-            handleSelectAddress(res.data[0]);
-          }
+          if (res.data.length > 0) handleSelectAddress(res.data[0]);
         })
         .catch(err => console.error("Failed to load saved addresses", err));
     }
@@ -225,7 +220,6 @@ export default function Checkout() {
     } catch (err) { setDisplayLocationName("Pinned Location"); }
   };
 
-  // Uses the evaluated cart subtotal, not the raw one
   const finalTotal = dynamicCartSubtotal + deliveryFee;
 
   const handleSubmit = async (e) => {
@@ -244,7 +238,6 @@ export default function Checkout() {
       ? `[${selectedSavedAddress.address_type}] ${displayLocationName}` 
       : displayLocationName;
 
-    // Use the dynamically evaluated items to ensure backend receives correct unitPrice
     const orderPayload = {
       customer_name: user ? user.username : formData.name, 
       customer_phone: formData.phone,
@@ -255,19 +248,44 @@ export default function Checkout() {
         product_id: item.product.id,
         variant_id: item.variant.id,
         quantity: item.quantity,
-        price: item.unitPrice, // Send the calculated discounted/bulk price!
-        applied_offer: item.appliedOffer // <-- FIXED: Make sure the offer type is sent!
+        price: item.unitPrice, 
+        applied_offer: item.appliedOffer 
       }))
     };
 
     try {
       const token = localStorage.getItem('access');
       const config = { headers: token ? { Authorization: `JWT ${token}` } : {} };
-      await axios.post('http://127.0.0.1:8000/api/orders/orders/', orderPayload, config);
-      clearCart(); 
-      navigate('/profile'); 
+      
+      // 1. Save the order to the database
+      const orderRes = await axios.post('http://127.0.0.1:8000/api/orders/orders/', orderPayload, config);
+      const newOrderId = orderRes.data.id;
+
+      // 2. Process Payment via the new endpoint
+      const paymentPayload = {
+        payment_method: paymentMethod,
+        phone_number: formData.phone
+      };
+      const paymentRes = await axios.post(`http://127.0.0.1:8000/api/orders/orders/${newOrderId}/process_payment/`, paymentPayload, config);
+      
+      // 3. Handle Gateway Response Action
+      const gatewayAction = paymentRes.data.action;
+      
+      // We clear the cart as the order is safely saved
+      clearCart();
+
+      if (gatewayAction === 'redirect') {
+        window.location.href = paymentRes.data.checkout_url;
+        return; 
+      } else if (gatewayAction === 'awaiting_pin' || gatewayAction === 'awaiting_transfer') {
+        alert(paymentRes.data.message);
+        navigate('/profile');
+      } else {
+        navigate('/profile');
+      }
+
     } catch (error) {
-      setErrorMessage("Something went wrong processing your order.");
+      setErrorMessage(error.response?.data?.error || "Something went wrong processing your order.");
       setIsSubmitting(false);
     }
   };
@@ -365,7 +383,7 @@ export default function Checkout() {
                   
                   <div className="grid md:grid-cols-2 gap-6 mt-6">
                     <div>
-                      <label className="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 transition-colors duration-300">Phone Number</label>
+                      <label className="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2 transition-colors duration-300">Phone Number (For M-Pesa / Airtel)</label>
                       <input type="tel" name="phone" required value={formData.phone} onChange={handleChange} disabled={isSubmitting} placeholder="07XX XXX XXX" className="w-full bg-gray-50 dark:bg-[#0F2318] border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:bg-white dark:focus:bg-[#060D0A] focus:border-[#7DC57A] dark:focus:border-[#7DC57A] focus:ring-2 focus:ring-[#7DC57A]/20 transition-all font-medium text-gray-800 dark:text-white dark:placeholder-gray-500" />
                     </div>
                     <div>
@@ -480,6 +498,90 @@ export default function Checkout() {
                     )}
                   </AnimatePresence>
                 </div>
+                
+                <hr className="border-gray-100 dark:border-white/5 transition-colors duration-300" />
+
+                {/* ─── NEW: SECTION 3 - PAYMENT METHOD ─── */}
+                <div className="pb-4">
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-[#F5EDD8] mb-6 transition-colors duration-300" style={{ fontFamily: "'Cormorant Garamond', serif" }}>3. Payment Method</h3>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {/* Option: M-Pesa */}
+                    <div 
+                      onClick={() => setPaymentMethod('M-Pesa')}
+                      className={`cursor-pointer border-2 rounded-2xl p-4 flex flex-col items-center justify-center gap-3 transition-all duration-300 ${
+                        paymentMethod === 'M-Pesa' 
+                        ? 'border-[#52B44B] bg-[#52B44B]/10 shadow-md transform scale-[1.02]' 
+                        : 'border-gray-100 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/30 bg-gray-50 dark:bg-white/5'
+                      }`}
+                    >
+                      <div className="h-10 flex items-center justify-center">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/1/15/M-PESA_LOGO-01.svg" alt="M-Pesa" className="h-8 object-contain" />
+                      </div>
+                      <span className={`font-bold text-sm ${paymentMethod === 'M-Pesa' ? 'text-[#52B44B]' : 'text-gray-700 dark:text-gray-300'}`}>M-Pesa</span>
+                    </div>
+
+                    {/* Option: Airtel Money */}
+                    <div 
+                      onClick={() => setPaymentMethod('Airtel Money')}
+                      className={`cursor-pointer border-2 rounded-2xl p-4 flex flex-col items-center justify-center gap-3 transition-all duration-300 ${
+                        paymentMethod === 'Airtel Money' 
+                        ? 'border-[#FF0000] bg-[#FF0000]/10 shadow-md transform scale-[1.02]' 
+                        : 'border-gray-100 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/30 bg-gray-50 dark:bg-white/5'
+                      }`}
+                    >
+                      <div className="h-10 flex items-center justify-center">
+                        {/* Swapped to local asset */}
+                        <img src={airtelLogo} alt="Airtel Money" className="h-8 object-contain drop-shadow-sm" />
+                      </div>
+                      <span className={`font-bold text-sm ${paymentMethod === 'Airtel Money' ? 'text-[#FF0000]' : 'text-gray-700 dark:text-gray-300'}`}>Airtel</span>
+                    </div>
+
+                    {/* Option: Card */}
+                    <div 
+                      onClick={() => setPaymentMethod('Card')}
+                      className={`cursor-pointer border-2 rounded-2xl p-4 flex flex-col items-center justify-center gap-3 transition-all duration-300 ${
+                        paymentMethod === 'Card' 
+                        ? 'border-[#1A1F71] bg-[#1A1F71]/10 shadow-md transform scale-[1.02]' 
+                        : 'border-gray-100 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/30 bg-gray-50 dark:bg-white/5'
+                      }`}
+                    >
+                      <div className="h-10 flex items-center justify-center gap-2">
+                        {/* Swapped to local asset */}
+                        <img src={visaMastercardLogo} alt="Visa & Mastercard" className="h-8 object-contain" />
+                      </div>
+                      <span className={`font-bold text-sm ${paymentMethod === 'Card' ? 'text-[#1A1F71] dark:text-[#6366F1]' : 'text-gray-700 dark:text-gray-300'}`}>Card</span>
+                    </div>
+
+                    {/* Option: Crypto */}
+                    <div 
+                      onClick={() => setPaymentMethod('Crypto')}
+                      className={`cursor-pointer border-2 rounded-2xl p-4 flex flex-col items-center justify-center gap-3 transition-all duration-300 ${
+                        paymentMethod === 'Crypto' 
+                        ? 'border-[#F7931A] bg-[#F7931A]/10 shadow-md transform scale-[1.02]' 
+                        : 'border-gray-100 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/30 bg-gray-50 dark:bg-white/5'
+                      }`}
+                    >
+                      <div className="h-10 flex items-center justify-center gap-1.5">
+                        <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=032" alt="Bitcoin" className="h-6 object-contain drop-shadow-sm" />
+                        <img src="https://cryptologos.cc/logos/tether-usdt-logo.svg?v=032" alt="Tether" className="h-6 object-contain drop-shadow-sm" />
+                      </div>
+                      <span className={`font-bold text-sm ${paymentMethod === 'Crypto' ? 'text-[#F7931A]' : 'text-gray-700 dark:text-gray-300'}`}>Crypto</span>
+                    </div>
+                  </div>
+                  
+                  {/* Dynamic Help Text */}
+                  <div className="mt-4 p-4 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30 flex items-start gap-3">
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5"><path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" /></svg>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">
+                      {paymentMethod === 'M-Pesa' && "We will send an STK push prompt to your phone. Ensure your phone is unlocked."}
+                      {paymentMethod === 'Airtel Money' && "We will send a payment prompt to your Airtel line to complete the transaction."}
+                      {paymentMethod === 'Card' && "You will be redirected to our secure payment gateway to enter your card details."}
+                      {paymentMethod === 'Crypto' && "You will receive a secure wallet address to transfer USDT or BTC."}
+                    </p>
+                  </div>
+                </div>
+
               </form>
             </motion.div>
           </motion.div>
@@ -548,13 +650,13 @@ export default function Checkout() {
                 disabled={isSubmitting}
                 className="w-full bg-[#C4892A] text-[#0F2318] py-4 rounded-xl font-bold text-lg hover:bg-[#b07b25] dark:hover:bg-[#d69832] transition-colors shadow-[0_10px_20px_rgba(196,137,42,0.3)] flex justify-center items-center gap-3 mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Processing...' : 'Confirm Order'}
+                {isSubmitting ? 'Processing...' : `Pay KES ${finalTotal.toLocaleString()}`}
                 {!isSubmitting && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>}
               </motion.button>
 
               <div className="mt-6 flex items-center justify-center gap-2 text-xs text-[#F5EDD8]/40 font-medium">
                 <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" clipRule="evenodd" /></svg>
-                Secure Checkout Process
+                Secured by {paymentMethod}
               </div>
             </div>
           </motion.div>
